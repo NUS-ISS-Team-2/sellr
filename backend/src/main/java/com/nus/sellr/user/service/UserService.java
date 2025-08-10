@@ -4,6 +4,7 @@ import com.nus.sellr.user.dto.UserRequest;
 import com.nus.sellr.user.dto.UserResponse;
 import com.nus.sellr.user.entity.User;
 import com.nus.sellr.user.repository.UserRepository;
+import com.nus.sellr.user.util.PasswordUtil;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,8 +20,15 @@ public class UserService {
     }
 
     public UserResponse createUser(UserRequest request) {
-        // Here you would hash password before saving in a real app
-        User user = new User(request.getUsername(), request.getEmail(), request.getPassword());
+        User user = new User();
+        user.setUsername(request.getUsername());
+        user.setEmail(request.getEmail());
+
+        // Hash password before saving
+        String hashedPassword = PasswordUtil.hashPassword(request.getPassword());
+        user.setPassword(hashedPassword);
+
+        // Save user to DB
         User savedUser = userRepository.save(user);
 
         return new UserResponse(savedUser.getId(), savedUser.getUsername(), savedUser.getEmail());
