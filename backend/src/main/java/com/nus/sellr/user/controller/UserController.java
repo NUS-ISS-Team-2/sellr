@@ -29,13 +29,4 @@ public class UserController {
         return ResponseEntity.ok("Hello, Sellr backend is running!");
 
     }
-
-    @GetMapping("/{username}")
-    public ResponseEntity<UserResponse> getUserByUsername(@PathVariable String username) {
-        UserResponse user = userService.getUserByUsername(username);
-        if (user == null) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(user);
-    }
 }
