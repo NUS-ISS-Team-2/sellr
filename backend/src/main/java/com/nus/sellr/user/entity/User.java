@@ -5,10 +5,12 @@ import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@Document(collection = "users")
+import java.util.HashSet;
+import java.util.Set;
+
 @Getter
 @Setter
-public class User {
+public abstract class User {
 
     @Id
     private String id;
