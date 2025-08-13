@@ -3,8 +3,6 @@ package com.nus.sellr.user.dto;
 import com.nus.sellr.user.entity.Role;
 import lombok.Data;
 
-import java.util.Set;
-
 @Data
 public class UserRequest {
 
