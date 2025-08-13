@@ -23,6 +23,9 @@ jobs:
       with:
         distribution: temurin
         java-version: '17'
+    
+    - name: Run Checkstyle
+      run: mvn -f backend/pom.xml checkstyle:check
 
     - name: Build and Test with Maven
       run: mvn -f backend/pom.xml clean install
