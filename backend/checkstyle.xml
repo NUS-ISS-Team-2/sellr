@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<!DOCTYPE module PUBLIC
+        "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN"
+        "https://checkstyle.org/dtds/configuration_1_3.dtd">
+
+<module name="Checker">
+    <property name="severity" value="error"/>
+
+    <!-- LineLength must be here, not inside TreeWalker -->
+    <module name="LineLength">
+        <property name="max" value="120"/>
+    </module>
+
+    <module name="TreeWalker">
+
+        <!-- Code structure -->
+        <module name="OuterTypeFilename"/>       <!-- Class name matches file name -->
+        <module name="UnusedImports"/>           <!-- Remove unused imports -->
+        <module name="RedundantImport"/>         <!-- No duplicate imports -->
+
+        <!-- Formatting -->
+        <module name="Indentation">
+            <property name="basicOffset" value="4"/>
+            <property name="braceAdjustment" value="0"/>
+            <property name="caseIndent" value="4"/>
+            <property name="tabWidth" value="4"/>
+        </module>
+        <module name="NeedBraces"/>               <!-- Always use braces for if/while -->
+
+        <!-- Naming conventions -->
+        <module name="TypeName"/>                 <!-- Classes use PascalCase -->
+        <module name="MethodName"/>               <!-- Methods use camelCase -->
+        <module name="ParameterName"/>            <!-- Parameters use camelCase -->
+        <module name="LocalVariableName"/>        <!-- Variables use camelCase -->
+        <module name="ConstantName"/>             <!-- Constants use UPPER_CASE -->
+
+    </module>
+</module>
