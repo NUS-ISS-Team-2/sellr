@@ -1,4 +1,4 @@
-name: Java Backend CI
+name: CI
 
 on:
   push:
@@ -12,14 +12,39 @@ on:
       
 jobs:
   build:
-    name: Backend CI 
+    name: build-and-analyze
     runs-on: ubuntu-latest
+    
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
       with:
         fetch-depth: 0
+
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 20
+
+    - name: Install frontend dependencies
+      run: npm ci
+      working-directory: ./frontend
+
+    - name: Lint frontend
+      run: npm run lint
+      working-directory: ./frontend
+
+    - name: Test frontend
+      run: npm test -- --watchAll=false --passWithNoTests
+      working-directory: ./frontend
+
+    - name: Build frontend
+      run: npm run build
+      working-directory: ./frontend
 
     - name: Set up JDK 17
       uses: actions/setup-java@v3
@@ -44,7 +69,13 @@ jobs:
     - name: Run Checkstyle
       run: mvn -f backend/pom.xml checkstyle:check
       
-    - name: Build, Test, and SonarCloud Analysis
-      env:
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      run: mvn -f backend/pom.xml -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=NUS-ISS-Team-2_sellr
+    - name: SonarCloud Scan
+      run: |
+        mvn -f backend/pom.xml org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+          -Dsonar.projectKey=NUS-ISS-Team-2_sellr \
+          -Dsonar.organization=nus-iss-team-2 \
+          -Dsonar.sources=frontend/src,backend/src \
+          -Dsonar.tests=frontend/src,backend/src \
+          -Dsonar.exclusions=node_modules/**,build/**,**/target/** \
+          -Dsonar.javascript.lcov.reportPaths=frontend/coverage/lcov.info \
+          -Dsonar.login=$SONAR_TOKEN
