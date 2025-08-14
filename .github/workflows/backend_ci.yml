@@ -47,9 +47,4 @@ jobs:
     - name: Build, Test, and SonarCloud Analysis
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        SONAR_PROJECTKEY: ${{ secrets.SONAR_PROJECTKEY }}
-        SONAR_ORG: ${{ secrets.SONAR_ORG }}
-      run: mvn -f backend/pom.xml -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-        -Dsonar.projectKey=$SONAR_PROJECTKEY \
-        -Dsonar.organization=$SONAR_ORG \
-        -Dsonar.login=$SONAR_TOKEN
+      run: mvn -f backend/pom.xml -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=NUS-ISS-Team-2_sellr
