@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import { Link } from "react-router-dom";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -48,9 +49,7 @@ export default function LoginPage() {
           </form>
           <p className="text-center text-sm text-gray-500 mt-4">
             Don't have an account?{" "}
-            <a href="/register" className="text-blue-600 hover:underline">
-              Sign up
-            </a>
+            <Link to="/register" className="text-blue-600 hover:underline">Sign up</Link>
           </p>
         </div>
       </main>

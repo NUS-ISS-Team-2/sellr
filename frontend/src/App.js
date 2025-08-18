@@ -7,12 +7,11 @@ import RegisterPage from "./pages/RegisterPage";
 
 export default function App() {
   return (
-    <Router>
+    <Router basename="/app">
       <Routes>
-        <Route path="/app" element={<MainPage />} />
+        <Route path="/" element={<MainPage />}/>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
-
       </Routes>
     </Router>
   );
