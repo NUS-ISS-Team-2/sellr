@@ -5,23 +5,24 @@ export default function ProductForm({ onProductAdded }) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
-  const [file, setFile] = useState(null);
+  const [imageUrl, setImageUrl] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!file) return alert("Please select an image");
 
-    const formData = new FormData();
-    formData.append("name", name);
-    formData.append("description", description);
-    formData.append("price", price);
-    formData.append("file", file);
+    if (!imageUrl) return alert("Please provide an image URL");
+
+    const productData = {
+      name,
+      description,
+      price: Number(price),
+      imageUrl,
+    };
 
     try {
       const res = await axios.post(
-        "http://localhost:8080/api/products/create",
-        formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
+        "http://localhost:8080/api/products",
+        productData
       );
 
       onProductAdded(res.data);
@@ -30,7 +31,7 @@ export default function ProductForm({ onProductAdded }) {
       setName("");
       setDescription("");
       setPrice("");
-      setFile(null);
+      setImageUrl("");
     } catch (err) {
       console.error("Failed to create product", err);
     }
@@ -61,11 +62,12 @@ export default function ProductForm({ onProductAdded }) {
         className="w-full p-2 border rounded"
       />
       <input
-        type="file"
-        accept="image/*"
-        onChange={(e) => setFile(e.target.files[0])}
+        type="text"
+        placeholder="Image URL"
+        value={imageUrl}
+        onChange={(e) => setImageUrl(e.target.value)}
         required
-        className="w-full"
+        className="w-full p-2 border rounded"
       />
       <button
         type="submit"
