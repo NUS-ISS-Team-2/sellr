@@ -1,7 +1,7 @@
 package com.nus.sellr.user.service;
 
-import com.nus.sellr.user.dto.UserRequest;
-import com.nus.sellr.user.dto.UserResponse;
+import com.nus.sellr.user.dto.CreateUserRequest;
+import com.nus.sellr.user.dto.CreateUserResponse;
 import com.nus.sellr.user.entity.*;
 import com.nus.sellr.user.factory.UserFactory;
 import com.nus.sellr.user.repository.AdminRepository;
@@ -29,7 +29,7 @@ public class UserService {
         this.userFactory = userFactory;
     }
 
-    public UserResponse createUser(UserRequest request) {
+    public CreateUserResponse createUser(CreateUserRequest request) {
         Role role = request.getRole();
 
         User user = userFactory.createUser(
@@ -54,6 +54,6 @@ public class UserService {
                 throw new IllegalArgumentException("Invalid role: " + role);
         }
 
-        return new UserResponse(savedUser.getId(), savedUser.getUsername(), savedUser.getEmail());
+        return new CreateUserResponse(savedUser.getId(), savedUser.getUsername(), savedUser.getEmail());
     }
 }

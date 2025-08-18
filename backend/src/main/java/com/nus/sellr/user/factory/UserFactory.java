@@ -9,7 +9,7 @@ public class UserFactory {
     public User createUser(String username, String email, String password, Role role) {
         switch (role) {
             case ADMIN:
-                return new Admin(username, email, password, "ADM-" + System.currentTimeMillis());
+                return new Admin(username, email, password);
 
             case BUYER:
                 return new Buyer(username, email, password, 0); // loyalty points start at 0
