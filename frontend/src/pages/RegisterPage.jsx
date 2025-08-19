@@ -11,6 +11,7 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [activeTab, setActiveTab] = useState("buyer");
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -23,9 +24,9 @@ export default function RegisterPage() {
           username: username,
           email: email,
           password: password, 
-          role: "BUYER"
+          role: activeTab.toUpperCase()
       })
-      navigate("/app");
+      navigate("/");
     } catch (error) {
       console.error("Error registering user:", error);
       alert("Registration failed. Please try again.");
@@ -37,6 +38,32 @@ export default function RegisterPage() {
       <main className="flex-1 flex items-center justify-center">
         <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-md text-gray-800">
           <h2 className="text-2xl font-bold mb-6 text-center">Register for sellr</h2>
+
+          {/* Tabs */}
+          <div className="flex mb-6 border-b">
+            <button
+              className={`flex-1 py-2 text-center ${
+                activeTab === "buyer"
+                  ? "border-b-2 border-blue-600 font-bold"
+                  : "text-gray-500"
+              }`}
+              onClick={() => setActiveTab("buyer")}
+            >
+              Buyer
+            </button>
+            <button
+              className={`flex-1 py-2 text-center ${
+                activeTab === "seller"
+                  ? "border-b-2 border-blue-600 font-bold"
+                  : "text-gray-500"
+              }`}
+              onClick={() => setActiveTab("seller")}
+            >
+              Seller
+            </button>
+          </div>
+
+          {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block mb-2">Username</label>
@@ -78,6 +105,7 @@ export default function RegisterPage() {
                 className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
+
             <button
               type="submit"
               className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors"
@@ -85,6 +113,7 @@ export default function RegisterPage() {
               Register
             </button>
           </form>
+
           <p className="text-center text-sm text-gray-500 mt-4">
             Already have an account?{" "}
             <a href="/login" className="text-blue-600 hover:underline">
