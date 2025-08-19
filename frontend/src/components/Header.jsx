@@ -13,7 +13,11 @@ export default function Header() {
           <Link to="/login" className="hover:text-gray-200">Login</Link>
           <Link to="/contact" className="hover:text-gray-200">Contact</Link>
         </nav>
-        <div className="relative">
+        <div className="relative flex items-center space-x-4">
+          {/* Username */}
+          <span className="font-medium">Hello, John</span>
+
+          {/* Cart */}
           <button className="relative">
             🛒
             <span className="absolute -top-2 -right-2 bg-red-500 text-xs rounded-full px-1">3</span>
