@@ -17,7 +17,7 @@ export default function LoginPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post("http://localhost:8081/api/users/login", {
+      const response = await axios.post("http://localhost:8080/api/users/login", {
           identifier: email,
           password: password, 
       })
