@@ -10,6 +10,7 @@ import com.nus.sellr.user.repository.AdminRepository;
 import com.nus.sellr.user.repository.BuyerRepository;
 import com.nus.sellr.user.repository.SellerRepository;
 import com.nus.sellr.user.repository.UserRepository;
+import com.nus.sellr.user.util.JwtUtils;
 import com.nus.sellr.user.util.PasswordUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -28,6 +29,9 @@ public class UserService {
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private JwtUtils jwtUtils;
 
     public UserService(AdminRepository adminRepository,
                        BuyerRepository buyerRepository,
@@ -72,7 +76,8 @@ public class UserService {
         if (userOptional.isPresent()) {
             User user = userOptional.get();
             if (passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
-                return new LoginResponse(user.getId(), user.getUsername(), user.getEmail());
+                String token = jwtUtils.generateToken(user);
+                return new LoginResponse(user.getId(), user.getUsername(), user.getEmail(), token);
             }
         }
         return new LoginResponse();
