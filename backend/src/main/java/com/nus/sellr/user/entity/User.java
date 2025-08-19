@@ -22,7 +22,6 @@ public abstract class User {
     @Email(message = "Invalid email format")
     @NotBlank(message = "Email is required")
     private String email;
-
     private String password;  // store hashed passwords only!
 
     // Constructors

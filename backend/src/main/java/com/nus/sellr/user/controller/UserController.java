@@ -3,6 +3,7 @@ package com.nus.sellr.user.controller;
 import com.nus.sellr.user.dto.LoginRequest;
 import com.nus.sellr.user.dto.CreateUserRequest;
 import com.nus.sellr.user.dto.CreateUserResponse;
+import com.nus.sellr.user.dto.LoginResponse;
 import com.nus.sellr.user.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,8 +29,10 @@ public class UserController {
         return ResponseEntity.ok("Hello, Sellr backend is running!");
     }
 
+
     @PostMapping("/login")
-    public ResponseEntity<String> loginUser (@RequestBody LoginRequest request) {
-        return ResponseEntity.ok("test");
+    public ResponseEntity<LoginResponse> loginUser(@RequestBody LoginRequest loginRequest) {
+        LoginResponse loginResponse = userService.loginUser(loginRequest);
+        return ResponseEntity.ok(loginResponse);
     }
 }
