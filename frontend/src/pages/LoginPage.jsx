@@ -1,16 +1,38 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { Link } from "react-router-dom";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { UserContext } from "../context/UserContext";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleSubmit = (e) => {
+  const navigate = useNavigate(); 
+  const { login } = useContext(UserContext); // get login function from context
+
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Placeholder for login logic
-    alert(`Email: ${email}\nPassword: ${password}`);
+    try {
+      const response = await axios.post("http://localhost:8081/api/users/login", {
+          identifier: email,
+          password: password, 
+      })
+
+      const token = response.data.token;
+      if (!token) {
+        alert("Login failed. Please try again.");
+      } else {
+        login(token); 
+        navigate("/");
+      }
+    } catch (error) {
+      console.error("Error logging in", error);
+      alert("Login failed. Please try again.");
+    }
   };
 
   return (
@@ -21,9 +43,8 @@ export default function LoginPage() {
           <h2 className="text-2xl font-bold mb-6 text-center">Login to sellr</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-gray-700 mb-2">Email</label>
+              <label className="block text-gray-700 mb-2">Email or Username</label>
               <input
-                type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required

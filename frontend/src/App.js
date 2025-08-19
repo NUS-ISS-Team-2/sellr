@@ -3,16 +3,19 @@ import MainPage from "./pages/MainPage";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
+import { ContextProvider, UserContext } from "./context/UserContext";
 
 
 export default function App() {
   return (
-    <Router basename="/app">
-      <Routes>
-        <Route path="/" element={<MainPage />}/>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-      </Routes>
-    </Router>
+    <ContextProvider>
+      <Router basename="/app">
+        <Routes>
+          <Route path="/" element={<MainPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+        </Routes>
+      </Router>
+    </ContextProvider>
   );
 }
