@@ -2,10 +2,11 @@ import React, { useState } from "react";
 import Footer from "../components/Footer";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 export default function RegisterPage() {
 
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
 
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -21,10 +22,10 @@ export default function RegisterPage() {
     }
     try {
       axios.post("http://localhost:8080/api/users", {
-          username: username,
-          email: email,
-          password: password, 
-          role: activeTab.toUpperCase()
+        username: username,
+        email: email,
+        password: password,
+        role: activeTab.toUpperCase()
       })
       navigate("/");
     } catch (error) {
@@ -42,21 +43,19 @@ export default function RegisterPage() {
           {/* Tabs */}
           <div className="flex mb-6 border-b">
             <button
-              className={`flex-1 py-2 text-center ${
-                activeTab === "buyer"
+              className={`flex-1 py-2 text-center ${activeTab === "buyer"
                   ? "border-b-2 border-blue-600 font-bold"
                   : "text-gray-500"
-              }`}
+                }`}
               onClick={() => setActiveTab("buyer")}
             >
               Buyer
             </button>
             <button
-              className={`flex-1 py-2 text-center ${
-                activeTab === "seller"
+              className={`flex-1 py-2 text-center ${activeTab === "seller"
                   ? "border-b-2 border-blue-600 font-bold"
                   : "text-gray-500"
-              }`}
+                }`}
               onClick={() => setActiveTab("seller")}
             >
               Seller
@@ -116,9 +115,7 @@ export default function RegisterPage() {
 
           <p className="text-center text-sm text-gray-500 mt-4">
             Already have an account?{" "}
-            <a href="/login" className="text-blue-600 hover:underline">
-              Login
-            </a>
+            <Link to="/login" className="text-blue-600 hover:underline">Login</Link>
           </p>
         </div>
       </main>
