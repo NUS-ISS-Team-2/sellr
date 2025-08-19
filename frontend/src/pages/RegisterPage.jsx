@@ -1,8 +1,13 @@
 import React, { useState } from "react";
 import Footer from "../components/Footer";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 export default function RegisterPage() {
-  const [name, setName] = useState("");
+
+  const navigate = useNavigate(); 
+
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -13,8 +18,18 @@ export default function RegisterPage() {
       alert("Passwords do not match!");
       return;
     }
-    // Placeholder for register logic
-    alert(`Name: ${name}\nEmail: ${email}\nPassword: ${password}`);
+    try {
+      axios.post("http://localhost:8080/api/users", {
+          username: username,
+          email: email,
+          password: password, 
+          role: "BUYER"
+      })
+      navigate("/app");
+    } catch (error) {
+      console.error("Error registering user:", error);
+      alert("Registration failed. Please try again.");
+    }
   };
 
   return (
@@ -24,11 +39,11 @@ export default function RegisterPage() {
           <h2 className="text-2xl font-bold mb-6 text-center">Register for sellr</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block mb-2">Name</label>
+              <label className="block mb-2">Username</label>
               <input
                 type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
                 required
                 className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               />

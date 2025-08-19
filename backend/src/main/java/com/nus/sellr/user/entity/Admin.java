@@ -9,12 +9,9 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document(collection = "admins")
 public class Admin extends User {
 
-    private String adminCode; //not sure if we want this here, just something to diffentiate as an admin
-
     public Admin() {}
 
-    public Admin(String username, String email, String password, String adminCode) {
+    public Admin(String username, String email, String password) {
         super(username, email, password);
-        this.adminCode = adminCode;
     }
 }
