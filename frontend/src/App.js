@@ -3,7 +3,7 @@ import MainPage from "./pages/MainPage";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
-import { ContextProvider, UserContext } from "./context/UserContext";
+import { ContextProvider } from "./context/UserContext";
 
 
 export default function App() {
