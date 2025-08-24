@@ -44,6 +44,13 @@ public class UserService {
     }
 
     public CreateUserResponse createUser(CreateUserRequest request) {
+
+        if (usernameExist(request.getUsername())) {
+            throw new IllegalArgumentException("Username exists.");
+        } else if (emailExist(request.getEmail())) {
+            throw new IllegalArgumentException("Email exists.");
+        }
+
         Role role = request.getRole();
 
         User user = userFactory.createUser(
@@ -81,5 +88,15 @@ public class UserService {
             }
         }
         return new LoginResponse();
+    }
+
+    public boolean usernameExist(String username) {
+        return buyerRepository.existsByUsername(username)
+                || sellerRepository.existsByUsername(username);
+    }
+
+    public boolean emailExist(String email) {
+        return buyerRepository.existsByEmail(email)
+                || sellerRepository.existsByEmail(email);
     }
 }
