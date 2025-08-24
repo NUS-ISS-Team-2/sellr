@@ -14,14 +14,14 @@ export default function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [activeTab, setActiveTab] = useState("buyer");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (password !== confirmPassword) {
       alert("Passwords do not match!");
       return;
     }
     try {
-      axios.post("http://localhost:8080/api/users", {
+      await axios.post("http://localhost:8080/api/users", {
         username: username,
         email: email,
         password: password,
@@ -29,8 +29,12 @@ export default function RegisterPage() {
       })
       navigate("/");
     } catch (error) {
-      console.error("Error registering user:", error);
-      alert("Registration failed. Please try again.");
+      console.log(error)
+      if (error.response.data.error) {
+        alert(error.response.data.error);
+      } else {
+        alert("Registration failed. Please try again.");
+      }
     }
   };
 
