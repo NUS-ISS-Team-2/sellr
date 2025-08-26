@@ -44,4 +44,8 @@ public class JwtUtils {
                 .signWith(jwtKey) // use the Key object, not a string
                 .compact();
     }
+
+    Key getJwtKeyForTest() {
+        return jwtKey;
+    }
 }

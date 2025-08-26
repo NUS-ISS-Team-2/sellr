@@ -102,6 +102,47 @@ class UserServiceTest {
     }
 
     @Test
+    void createUser_ShouldSaveSeller() {
+        // Arrange
+        CreateUserRequest request = new CreateUserRequest();
+        request.setUsername("seller1");
+        request.setEmail("seller1@example.com");
+        request.setPassword("pw");
+        request.setRole(Role.SELLER);
+
+        Seller seller = new Seller("seller1", "seller1@example.com", "hashedpw", "My New Store");
+        seller.setId("id456");
+
+        // Mock existence checks
+        when(buyerRepository.existsByUsername("seller1")).thenReturn(false);
+        when(sellerRepository.existsByUsername("seller1")).thenReturn(false);
+        when(buyerRepository.existsByEmail("seller1@example.com")).thenReturn(false);
+        when(sellerRepository.existsByEmail("seller1@example.com")).thenReturn(false);
+
+        // Mock user factory and save
+        when(userFactory.createUser(anyString(), anyString(), anyString(), eq(Role.SELLER)))
+                .thenReturn(seller);
+        when(sellerRepository.save(seller)).thenReturn(seller);
+
+        // Act
+        CreateUserResponse response = userService.createUser(request);
+
+        // Assert
+        assertNotNull(response);
+        assertEquals("id456", response.getId());
+        assertEquals("seller1", response.getUsername());
+        assertEquals("seller1@example.com", response.getEmail());
+
+        // Verify interactions
+        verify(buyerRepository).existsByUsername("seller1");
+        verify(sellerRepository).existsByUsername("seller1");
+        verify(buyerRepository).existsByEmail("seller1@example.com");
+        verify(sellerRepository).existsByEmail("seller1@example.com");
+        verify(userFactory).createUser(anyString(), anyString(), anyString(), eq(Role.SELLER));
+    }
+
+
+        @Test
     void createUser_ShouldThrow_WhenInvalidRole() {
         CreateUserRequest request = new CreateUserRequest();
         request.setUsername("badrole");
