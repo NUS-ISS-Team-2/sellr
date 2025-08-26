@@ -3,6 +3,10 @@ package com.nus.sellr.product.controller;
 import com.nus.sellr.product.dto.ProductRequest;
 import com.nus.sellr.product.dto.ProductResponse;
 import com.nus.sellr.product.service.ProductService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -54,5 +58,22 @@ public class ProductController {
     public ResponseEntity<Void> deleteProduct(@PathVariable String id) {
         productService.deleteProduct(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // 🔎 Search / Browse (filters + sort + pagination)
+    @GetMapping("/search")
+    public ResponseEntity<Page<ProductResponse>> searchProducts(
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false) String category,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "createdAt,desc") String sort      // e.g. "price,asc" or "name,asc"
+    ) {
+        String[] s = sort.split(",", 2);
+        Sort springSort = (s.length == 2) ? Sort.by(Sort.Direction.fromString(s[1]), s[0]) : Sort.by("createdAt").descending();
+
+        Pageable pageable = PageRequest.of(page, size, springSort);
+        Page<ProductResponse> results = productService.search(q, category, pageable);
+        return ResponseEntity.ok(results);
     }
 }
