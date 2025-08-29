@@ -70,7 +70,8 @@ public class ProductController {
             @RequestParam(defaultValue = "createdAt,desc") String sort      // e.g. "price,asc" or "name,asc"
     ) {
         String[] s = sort.split(",", 2);
-        Sort springSort = (s.length == 2) ? Sort.by(Sort.Direction.fromString(s[1]), s[0]) : Sort.by("createdAt").descending();
+        Sort springSort = (s.length == 2) ?
+                Sort.by(Sort.Direction.fromString(s[1]), s[0]) : Sort.by("createdAt").descending();
 
         Pageable pageable = PageRequest.of(page, size, springSort);
         Page<ProductResponse> results = productService.search(q, category, pageable);
