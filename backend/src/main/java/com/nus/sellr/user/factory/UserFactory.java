@@ -7,6 +7,11 @@ import org.springframework.stereotype.Component;
 public class UserFactory {
 
     public User createUser(String username, String email, String password, Role role) {
+
+        if (role == null) {
+            throw new IllegalArgumentException("Role is invalid or null");
+        }
+
         switch (role) {
             case ADMIN:
                 return new Admin(username, email, password);

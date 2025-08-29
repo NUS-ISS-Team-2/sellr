@@ -12,7 +12,6 @@ import com.nus.sellr.user.repository.SellerRepository;
 import com.nus.sellr.user.repository.UserRepository;
 import com.nus.sellr.user.util.JwtUtils;
 import com.nus.sellr.user.util.PasswordUtil;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -27,20 +26,22 @@ public class UserService {
     private final SellerRepository sellerRepository;
     private final UserFactory userFactory;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    @Autowired
-    private JwtUtils jwtUtils;
+    private final JwtUtils jwtUtils;
 
     public UserService(AdminRepository adminRepository,
                        BuyerRepository buyerRepository,
                        SellerRepository sellerRepository,
-                       UserFactory userFactory) {
+                       UserFactory userFactory,
+                       UserRepository userRepository,
+                       JwtUtils jwtUtils) {
         this.adminRepository = adminRepository;
         this.buyerRepository = buyerRepository;
         this.sellerRepository = sellerRepository;
         this.userFactory = userFactory;
+        this.userRepository = userRepository;
+        this.jwtUtils = jwtUtils;
     }
 
     public CreateUserResponse createUser(CreateUserRequest request) {
@@ -52,6 +53,10 @@ public class UserService {
         }
 
         Role role = request.getRole();
+
+        if (role == null) {
+            throw new IllegalArgumentException("Role is invalid or null");
+        }
 
         User user = userFactory.createUser(
                 request.getUsername(),
