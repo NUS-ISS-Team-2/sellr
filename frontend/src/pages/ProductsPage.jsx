@@ -4,9 +4,8 @@ import { useState, useMemo, useEffect } from "react";
 import axios from "axios";
 import SearchBar from "../components/SearchBar";
 import CategoriesList from "../components/CategoriesList";
-import ProductList from "../components/ProductList";
 import Pagination from "../components/Pagination";
-import ProductSlider from "../components/ProductSlider";
+import ProductGrid from "../components/ProductGrid";
 
 export default function ProductsPage() {
   const [search, setSearch] = useState("");
@@ -65,7 +64,7 @@ export default function ProductsPage() {
           <main className="flex-1">
             {loading && <div className="p-4">Loading…</div>}
 
-            <ProductSlider products={products} />
+            <ProductGrid products={products} />
 
             <Pagination
               page={page}

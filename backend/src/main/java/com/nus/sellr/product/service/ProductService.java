@@ -3,6 +3,7 @@ package com.nus.sellr.product.service;
 import com.nus.sellr.product.dto.ProductRequest;
 import com.nus.sellr.product.dto.ProductResponse;
 import com.nus.sellr.product.entity.Product;
+import com.nus.sellr.product.mapper.ProductMapper;
 import com.nus.sellr.product.repository.ProductRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -23,24 +24,22 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final MongoTemplate mongoTemplate;
+    private final ProductMapper productMapper;
 
-    public ProductService(ProductRepository productRepository, MongoTemplate mongoTemplate) {
+
+    public ProductService(ProductRepository productRepository, MongoTemplate mongoTemplate, ProductMapper productMapper) {
         this.productRepository = productRepository;
         this.mongoTemplate = mongoTemplate;
+        this.productMapper = productMapper;
     }
 
     // Create new product
     public ProductResponse createProduct(ProductRequest request) {
-        Product product = new Product(
-                request.getName(),
-                request.getDescription(),
-                request.getPrice(),
-                request.getImageUrl()
-        );
+        Product product = productMapper.toProduct(request);
 
         Product savedProduct = productRepository.save(product);
 
-        return this.toResponse(savedProduct);
+        return productMapper.toResponse(savedProduct);
     }
 
     // Get all products
@@ -49,7 +48,7 @@ public class ProductService {
         List<ProductResponse> responses = new ArrayList<>();
 
         for (Product p : products) {
-            responses.add(this.toResponse(p));
+            responses.add(productMapper.toResponse(p));
         }
 
         return responses;
@@ -64,7 +63,7 @@ public class ProductService {
         }
 
         Product p = productOpt.get();
-        return this.toResponse(p);
+        return productMapper.toResponse(p);
     }
 
     // Update product
@@ -83,7 +82,7 @@ public class ProductService {
 
         Product updated = productRepository.save(existing);
 
-        return this.toResponse(updated);
+        return productMapper.toResponse(updated);
     }
 
     // Delete product
@@ -124,28 +123,10 @@ public class ProductService {
         long total = mongoTemplate.count(Query.of(query).limit(-1).skip(-1), Product.class);
 
         // map to DTO
-        List<ProductResponse> responses = products.stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
+        List<ProductResponse> responses = productMapper.toResponseList(products);
 
         return new PageImpl<>(responses, pageable, total);
     }
 
-    /**
-     * Maps the Product entity to ProductResponse DTO.
-     * @param product
-     * @return ProductResponse
-     */
-    private ProductResponse toResponse(Product product) {
-        // map fields from entity -> DTO
-        ProductResponse dto = new ProductResponse();
-        dto.setId(product.getId());
-        dto.setName(product.getName());
-        dto.setDescription(product.getDescription());
-        dto.setPrice(product.getPrice());
-        dto.setImageUrl(product.getImageUrl());
-        // dto.setCategory(product.getCategory());
-        // dto.setStock(product.getStock());
-        return dto;
-    }
+
 }
