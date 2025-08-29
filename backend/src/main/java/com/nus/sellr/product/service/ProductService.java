@@ -27,7 +27,10 @@ public class ProductService {
     private final ProductMapper productMapper;
 
 
-    public ProductService(ProductRepository productRepository, MongoTemplate mongoTemplate, ProductMapper productMapper) {
+    public ProductService(
+            ProductRepository productRepository,
+            MongoTemplate mongoTemplate,
+            ProductMapper productMapper) {
         this.productRepository = productRepository;
         this.mongoTemplate = mongoTemplate;
         this.productMapper = productMapper;

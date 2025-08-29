@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 public class ProductMapper {
 
     public  ProductResponse toResponse(Product product) {
-        if (product == null) return null;
+        if (product == null) { return null; }
         // map fields from entity -> DTO
         ProductResponse dto = new ProductResponse();
         dto.setId(product.getId());
@@ -30,7 +30,7 @@ public class ProductMapper {
     }
 
     public Product toProduct(ProductRequest req) {
-        if (req == null) return null;
+        if (req == null) { return null; }
         Product entity = new Product();
         // id null; Mongo will generate
         entity.setName(req.getName());

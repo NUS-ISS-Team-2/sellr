@@ -12,7 +12,14 @@ public class ProductResponse {
     public ProductResponse() {
     }
 
-    public ProductResponse(String id, String name, String description, double price, String imageUrl, String category, int stock) {
+    public ProductResponse(
+            String id,
+            String name,
+            String description,
+            double price,
+            String imageUrl,
+            String category,
+            int stock) {
         this.id = id;
         this.name = name;
         this.description = description;
