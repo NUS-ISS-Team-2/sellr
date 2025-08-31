@@ -5,16 +5,20 @@ public class ProductRequest {
     private String description;
     private double price;
     private String imageUrl;
+    private String category;
+    private int stock;
 
     public ProductRequest() {
         // default constructor (needed for JSON deserialization)
     }
 
-    public ProductRequest(String name, String description, double price, String imageUrl) {
+    public ProductRequest(String name, String description, double price, String imageUrl, String category, int stock) {
         this.name = name;
         this.description = description;
         this.price = price;
         this.imageUrl = imageUrl;
+        this.category = category;
+        this.stock = stock;
     }
 
     public String getName() {
@@ -48,4 +52,12 @@ public class ProductRequest {
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
     }
+
+    public String getCategory() { return category; }
+
+    public void setCategory(String category) { this.category = category; }
+
+    public int getStock() { return stock; }
+
+    public void setStock(int stock) { this.stock = stock; }
 }
