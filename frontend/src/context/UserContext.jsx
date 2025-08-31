@@ -30,13 +30,17 @@ export function ContextProvider({ children }) {
   };
 
   // logout function
-  const logout = () => {
+  const logout = (navigate) => {
     setToken(null);
     setRole(null);
     setUsername(null);
+    setUserId(null);
     sessionStorage.removeItem("token");
     sessionStorage.removeItem("role");
     sessionStorage.removeItem("username");
+    sessionStorage.removeItem("userId");    
+
+    if (navigate) navigate("/"); 
   };
 
   return (

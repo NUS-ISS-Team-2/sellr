@@ -41,7 +41,9 @@ export default function CartPage() {
       const res = await axios.delete("http://localhost:8080/api/cart/remove", {
         data: { userId, productId },
       });
-      setCart(res.data);
+      console.log(res.data)
+
+      setCart(res.data); 
     } catch (err) {
       console.error("Failed to remove item:", err);
     }
@@ -102,12 +104,7 @@ export default function CartPage() {
                         +
                       </button>
 
-                      <button
-                        onClick={() => removeItem(item.productId)}
-                        className="ml-4 text-red-600 hover:underline"
-                      >
-                        Remove
-                      </button>
+                      <button onClick={() => removeItem(item.productId)}>Remove</button>
                     </div>
                   </div>
                 </div>

@@ -7,11 +7,13 @@ import { ContextProvider } from "./context/UserContext";
 import NotFoundPage from "./pages/NotFoundPage";
 import ProductsPage from "./pages/ProductsPage";
 import CartPage from "./pages/CartPage";
+import { CartProvider } from "./context/CartContext";
 
 export default function App() {
   return (
     <ContextProvider>
-      <Router basename="/app">
+      <CartProvider>
+        <Router basename="/app">
         <Routes>
           <Route path="/" element={<MainPage />} />
           <Route path="/login" element={<LoginPage />} />
@@ -21,6 +23,7 @@ export default function App() {
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Router>
+      </CartProvider>
     </ContextProvider>
   );
 }
