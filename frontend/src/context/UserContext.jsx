@@ -8,9 +8,10 @@ export function ContextProvider({ children }) {
   const [token, setToken] = useState(sessionStorage.getItem("token") || null);
   const [role, setRole] = useState(sessionStorage.getItem("role") || null);
   const [username, setUsername] = useState(sessionStorage.getItem("username") || null);
+  const [userId, setUserId] = useState(sessionStorage.getItem("userId") || null);
 
   // login function
-  const login = (jwtToken) => {
+  const login = (jwtToken, userId) => {
     setToken(jwtToken);
     sessionStorage.setItem("token", jwtToken);
 
@@ -23,6 +24,9 @@ export function ContextProvider({ children }) {
     setUsername(payload.sub || payload.username); // adjust based on your JWT
     sessionStorage.setItem("role", payload.role);
     sessionStorage.setItem("username", payload.sub || payload.username);
+
+    setUserId(userId);
+    sessionStorage.setItem("userId", userId);
   };
 
   // logout function
@@ -36,7 +40,7 @@ export function ContextProvider({ children }) {
   };
 
   return (
-    <UserContext.Provider value={{ token, role, username, login, logout }}>
+    <UserContext.Provider value={{ token, role, username, login, logout, userId }}>
       {children}
     </UserContext.Provider>
   );

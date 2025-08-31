@@ -26,7 +26,7 @@ export default function LoginPage() {
       if (!token) {
         alert("Login failed. Please try again.");
       } else {
-        login(token); 
+        login(token,  response.data.id); // call login function from context
         navigate("/");
       }
     } catch (error) {
