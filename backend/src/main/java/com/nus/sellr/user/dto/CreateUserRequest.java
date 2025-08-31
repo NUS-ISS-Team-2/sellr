@@ -4,17 +4,17 @@ import com.nus.sellr.user.entity.Role;
 import lombok.Data;
 
 @Data
-public class UserRequest {
+public class CreateUserRequest {
 
     private String username;
     private String email;
     private String password;
     private Role role;
 
-    public UserRequest() {
+    public CreateUserRequest() {
     }
 
-    public UserRequest(String username, String email, String password, Role role) {
+    public CreateUserRequest(String username, String email, String password, Role role) {
         this.username = username;
         this.email = email;
         this.password = password;

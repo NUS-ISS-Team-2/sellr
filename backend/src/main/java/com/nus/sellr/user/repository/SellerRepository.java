@@ -6,5 +6,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface SellerRepository extends MongoRepository<Seller, String> {
-    // Add Seller-specific queries here if needed
+    boolean existsByEmail(String email);
+    boolean existsByUsername(String username);
 }
