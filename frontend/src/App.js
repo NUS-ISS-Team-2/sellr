@@ -6,20 +6,24 @@ import RegisterPage from "./pages/RegisterPage";
 import { ContextProvider } from "./context/UserContext";
 import NotFoundPage from "./pages/NotFoundPage";
 import ProductsPage from "./pages/ProductsPage";
+import CartPage from "./pages/CartPage";
+import { CartProvider } from "./context/CartContext";
 
 export default function App() {
   return (
     <ContextProvider>
-      <Router basename="/app">
+      <CartProvider>
+        <Router basename="/app">
         <Routes>
           <Route path="/" element={<MainPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/products" element={<ProductsPage />} />
-
+          <Route path="/cart" element={<CartPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Router>
+      </CartProvider>
     </ContextProvider>
   );
 }

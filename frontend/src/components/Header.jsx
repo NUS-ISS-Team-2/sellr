@@ -1,11 +1,13 @@
 import React, { useContext, useState, useRef, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate  } from "react-router-dom";
 import { UserContext } from "../context/UserContext";
+import CartButton from "./CartButton";
 
 export default function Header() {
   const { username, logout } = useContext(UserContext);
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const navigate = useNavigate(); 
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -24,7 +26,7 @@ export default function Header() {
         <h1 className="text-2xl font-bold"><Link to="/">sellr</Link></h1>
 
         <nav className="space-x-6 font-medium">
-          <Link to="/shop" className="hover:text-gray-200">Shop</Link>
+          <Link to="/products" className="hover:text-gray-200">Shop</Link>
           <Link to="/contact" className="hover:text-gray-200">Contact</Link>
         </nav>
         <div className="relative flex items-center space-x-4">
@@ -42,7 +44,7 @@ export default function Header() {
                 {isOpen && (
                   <div className="absolute right-0 mt-2 w-32 bg-white text-black rounded shadow-lg z-10">
                     <button
-                      onClick={logout}
+                      onClick={() => logout(navigate)}
                       className="w-full text-left px-4 py-2 hover:bg-gray-200"
                     >
                       Logout
@@ -52,12 +54,7 @@ export default function Header() {
               </div>
 
               {/* Cart only if logged in */}
-              <button className="relative">
-                🛒
-                <span className="absolute -top-2 -right-2 bg-red-500 text-xs rounded-full px-1">
-                  3
-                </span>
-              </button>
+              <CartButton/>
             </>
           ) : (
             // If not logged in, show Login
