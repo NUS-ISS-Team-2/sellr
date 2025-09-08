@@ -4,42 +4,29 @@ import axios from "axios";
 import { useContext } from "react";
 
 export default function ProductGrid({ products = [] }) {
-  const { cartItems, addToCart, removeFromCart } = useCart();
+  const { cartItems, addToCart, decreaseFromCart } = useCart(); // use decrease instead of remove
   const { userId } = useContext(UserContext);
 
   const truncate = (text, maxLength) =>
     !text ? "" : text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
 
-  const handleAddToCart = async (product) => {
+  const updateCart = async (product, qtyChange) => {
     try {
       const res = await axios.post("http://localhost:8080/api/cart/add", {
         userId,
         productId: product.id,
-        quantity: 1,
+        quantity: qtyChange, // +1 or -1
       });
 
       if (res.status === 200) {
-        addToCart({ ...product, quantity: 1 });
+        if (qtyChange > 0) {
+          addToCart({ ...product, quantity: qtyChange });
+        } else {
+          decreaseFromCart(product.id);
+        }
       }
     } catch (err) {
-      console.error("Failed to add product to cart:", err);
-    }
-  };
-
-  const handleIncreaseQuantity = async (product) => {
-    try {
-      const res = await axios.post("http://localhost:8080/api/cart/add", {
-        userId,
-        productId: product.id,
-        quantity: 1,
-      });
-
-      if (res.status === 200) {
-        // Update quantity in context
-        addToCart({ ...product, quantity: 1 });
-      }
-    } catch (err) {
-      console.error("Failed to increase quantity:", err);
+      console.error("Failed to update cart:", err);
     }
   };
 
@@ -72,10 +59,9 @@ export default function ProductGrid({ products = [] }) {
                     ${Number(product.price ?? 0).toLocaleString()}
                   </p>
 
-                  {/* Conditional rendering based on cart */}
                   {!cartItem ? (
                     <button
-                      onClick={() => handleAddToCart(product)}
+                      onClick={() => updateCart(product, 1)}
                       className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
                     >
                       Add to Cart
@@ -84,13 +70,13 @@ export default function ProductGrid({ products = [] }) {
                     <div className="flex items-center space-x-2">
                       <span>{cartItem.quantity}</span>
                       <button
-                        onClick={() => handleIncreaseQuantity(product)}
+                        onClick={() => updateCart(product, 1)}
                         className="bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600 transition"
                       >
                         +
                       </button>
                       <button
-                        onClick={() => removeFromCart(product.id)}
+                        onClick={() => updateCart(product, -1)}
                         className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 transition"
                       >
                         -
