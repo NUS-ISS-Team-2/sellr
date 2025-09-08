@@ -4,7 +4,7 @@ import axios from "axios";
 import { useContext } from "react";
 
 export default function ProductGrid({ products = [] }) {
-  const { cartItems, addToCart, decreaseFromCart } = useCart(); // use decrease instead of remove
+  const { cartItems, addToCart, decreaseFromCart } = useCart();
   const { userId } = useContext(UserContext);
 
   const truncate = (text, maxLength) =>
@@ -19,7 +19,11 @@ export default function ProductGrid({ products = [] }) {
       });
 
       if (res.status === 200) {
-        if (qtyChange > 0) {
+        // Update local cart state based on quantity
+        const currentItem = cartItems.find((item) => item.id === product.id);
+        const newQuantity = (currentItem?.quantity || 0) + qtyChange;
+
+        if (newQuantity > 0) {
           addToCart({ ...product, quantity: qtyChange });
         } else {
           decreaseFromCart(product.id);
@@ -37,6 +41,7 @@ export default function ProductGrid({ products = [] }) {
       <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
         {products.map((product, idx) => {
           const cartItem = cartItems.find((item) => item.id === product.id);
+          const quantity = cartItem?.quantity || 0;
 
           return (
             <div
@@ -59,7 +64,7 @@ export default function ProductGrid({ products = [] }) {
                     ${Number(product.price ?? 0).toLocaleString()}
                   </p>
 
-                  {!cartItem ? (
+                  {quantity === 0 ? (
                     <button
                       onClick={() => updateCart(product, 1)}
                       className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
@@ -68,7 +73,7 @@ export default function ProductGrid({ products = [] }) {
                     </button>
                   ) : (
                     <div className="flex items-center space-x-2">
-                      <span>{cartItem.quantity}</span>
+                      <span>{quantity}</span>
                       <button
                         onClick={() => updateCart(product, 1)}
                         className="bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600 transition"

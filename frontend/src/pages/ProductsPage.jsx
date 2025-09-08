@@ -1,5 +1,4 @@
 import Header from "../components/Header";
-
 import { useState, useMemo, useEffect } from "react";
 import axios from "axios";
 import SearchBar from "../components/SearchBar";
