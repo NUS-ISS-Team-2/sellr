@@ -1,11 +1,11 @@
 import Header from "../components/Header";
 
 import { useState, useMemo, useEffect } from "react";
-import axios from "axios";
 import SearchBar from "../components/SearchBar";
 import CategoriesList from "../components/CategoriesList";
 import Pagination from "../components/Pagination";
 import ProductGrid from "../components/ProductGrid";
+import { searchProducts } from "../services/productService";
 
 export default function ProductsPage() {
   const [search, setSearch] = useState("");
@@ -23,22 +23,23 @@ export default function ProductsPage() {
     if (debouncedSearch === "" || debouncedSearch.length >= 3) {
     setLoading(true);
 
-    axios.get("http://localhost:8080/api/products/search", {
+    searchProducts({
+      q: debouncedSearch,
+      category,
+      page: Math.max(0, page - 1),
+      size: 20,
+      sort: "createdAt,desc",
       signal: controller.signal,
-      params: {
-        q: debouncedSearch || undefined,
-        category: category || undefined,
-        page: Math.max(0, page - 1),
-        size: 20,
-        sort: "createdAt,desc",
-      },
     })
-    .then((res) => setData(res.data))
-    .catch((err) => {
-      if (axios.isCancel(err)) return;
-      console.error("Error fetching products:", err);
-    })
-    .finally(() => setLoading(false));
+      .then((res) => {
+        setData(res);
+      })
+      .catch((err) => {
+        if (err.name !== "CanceledError") {
+          console.error("Failed to fetch products:", err);
+        }
+      })
+      .finally(() => setLoading(false));
     }
 
   return () => controller.abort();

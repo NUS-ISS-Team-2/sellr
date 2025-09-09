@@ -24,7 +24,7 @@ export default function Header() {
         <h1 className="text-2xl font-bold"><Link to="/">sellr</Link></h1>
 
         <nav className="space-x-6 font-medium">
-          <Link to="/shop" className="hover:text-gray-200">Shop</Link>
+          <Link to="/products" className="hover:text-gray-200">Shop</Link>
           <Link to="/contact" className="hover:text-gray-200">Contact</Link>
         </nav>
         <div className="relative flex items-center space-x-4">

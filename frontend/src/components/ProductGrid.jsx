@@ -1,4 +1,6 @@
 // ProductGrid.jsx
+import { Link } from "react-router-dom";
+
 export default function ProductGrid({ products = [] }) {
   const truncate = (text, maxLength) =>
     !text ? "" : text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
@@ -10,9 +12,10 @@ export default function ProductGrid({ products = [] }) {
       {/* Responsive grid that wraps into multiple rows */}
       <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
         {products.map((product, idx) => (
-          <div
+          <Link
             key={product.id ?? idx}
-            className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition"
+            to={`/products/${product.id}`}  // 👈 route to ProductDetail
+            className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition block"
           >
             <img
               src={product.imageUrl}
@@ -26,7 +29,7 @@ export default function ProductGrid({ products = [] }) {
                 ${Number(product.price ?? 0).toLocaleString()}
               </p>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
     </div>
