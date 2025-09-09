@@ -14,7 +14,7 @@ export default function ProductGrid({ products = [] }) {
         {products.map((product, idx) => (
           <Link
             key={product.id ?? idx}
-            to={`/products/${product.id}`}  // 👈 route to ProductDetail
+            to={`/products/${product.id}`}
             className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition block"
           >
             <img

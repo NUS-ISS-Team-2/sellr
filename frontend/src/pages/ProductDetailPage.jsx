@@ -86,7 +86,7 @@ export default function ProductDetailPage() {
     return n;
   };
 
-  const addToCart = async () => {
+  const addToCartClick = async () => {
     if (!userId) {
       alert("You need to be logged in to add items to your cart.");
       return;
@@ -224,7 +224,7 @@ export default function ProductDetailPage() {
                 </div>
 
                 <button
-                  onClick={addToCart}
+                  onClick={addToCartClick}
                   disabled={!inStock || reloading}
                   className="inline-flex justify-center items-center gap-2 rounded-2xl px-5 py-3 font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 shadow"
                 >
