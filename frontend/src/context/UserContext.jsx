@@ -35,11 +35,7 @@ export function ContextProvider({ children }) {
     setRole(null);
     setUsername(null);
     setUserId(null);
-    sessionStorage.removeItem("token");
-    sessionStorage.removeItem("role");
-    sessionStorage.removeItem("username");
-    sessionStorage.removeItem("userId");    
-
+    sessionStorage.clear();
     if (navigate) navigate("/"); 
   };
 
