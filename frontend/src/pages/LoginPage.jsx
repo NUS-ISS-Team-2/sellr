@@ -13,7 +13,7 @@ export default function LoginPage() {
 
   const navigate = useNavigate(); 
   const { login } = useContext(UserContext); // get login function from context
-  const { setCart } = useCart();
+  const { fetchCart } = useCart();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -23,8 +23,9 @@ export default function LoginPage() {
           password: password, 
       })
 
-      const cartResponse = await axios.get(`http://localhost:8080/api/cart?userId=${response.data.id}`);
-      setCart(cartResponse.data.items);
+      console.log(response);
+
+      fetchCart(response.data.id);
 
       const token = response.data.token;
       if (!token) {

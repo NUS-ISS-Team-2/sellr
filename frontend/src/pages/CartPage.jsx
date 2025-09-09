@@ -2,9 +2,12 @@ import React from "react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { useCart } from "../context/CartContext";
+import { useContext } from "react";
+import { UserContext } from "../context/UserContext";
 
 export default function CartPage() {
-  const { cartItems, addToCart, decreaseFromCart, removeFromCart } = useCart();
+  const { cartItems, updateCart, removeFromCart } = useCart();
+  const { userId } = useContext(UserContext);
 
   // Loading state if cartItems is undefined
   if (!cartItems) {
@@ -29,7 +32,7 @@ export default function CartPage() {
     );
   }
 
-  // Helper components
+  // Cart Item component
   const CartItem = ({ item }) => (
     <div className="flex items-center bg-white p-4 rounded shadow">
       <img
@@ -39,25 +42,25 @@ export default function CartPage() {
       />
       <div className="ml-4 flex-1">
         <h3 className="font-semibold">{item.name}</h3>
-        <p>${item.price.toFixed(2)}</p>
+        <p>${item.price}</p>
 
         <div className="flex items-center mt-2 space-x-2">
           <button
-            onClick={() => decreaseFromCart(item.id)}
-            className="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300"
-          >
-            -
-          </button>
-          <span>{item.quantity}</span>
-          <button
-            onClick={() => addToCart({ ...item, quantity: 1 })}
+            onClick={() => updateCart(userId, item.productId, 1)}
             className="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300"
           >
             +
           </button>
+          <span>{item.quantity}</span>
+          <button
+            onClick={() => updateCart(userId, item.productId, -1)}                                  
+            className="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300"
+          >
+            -
+          </button>
 
           <button
-            onClick={() => removeFromCart(item.id)}
+            onClick={() => removeFromCart(userId, item.productId)}
             className="ml-4 text-red-600 hover:underline"
           >
             Remove
@@ -67,8 +70,12 @@ export default function CartPage() {
     </div>
   );
 
+  // Cart totals
   const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
-  const subtotal = cartItems.reduce((sum, item) => sum + (item.price || 0) * item.quantity, 0);
+  const subtotal = cartItems.reduce(
+    (sum, item) => sum + (item.price || 0) * item.quantity,
+    0
+  );
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
