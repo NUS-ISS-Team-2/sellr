@@ -1,9 +1,9 @@
 // src/pages/ProductDetail.jsx
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useContext } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { getProductById, getRelatedProducts, addToCart } from "../services/productService";
 import Header from "../components/Header";
-
+import { UserContext } from "../context/UserContext";
 
 const currency = new Intl.NumberFormat("en-SG", {
   style: "currency",
@@ -32,7 +32,7 @@ export default function ProductDetailPage() {
   const [product, setProduct] = useState(null);
   const [qty, setQty] = useState(1);
   const [related, setRelated] = useState([]);
-  const [userId, setUserId] = useState(() => sessionStorage.getItem("userId"));
+  const { userId } = useContext(UserContext);
 
 
   const inStock = useMemo(() => Number(product?.stock ?? 0) > 0, [product]);

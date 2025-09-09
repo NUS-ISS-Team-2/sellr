@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { UserContext } from "../context/UserContext";
+import { useCart } from "../context/CartContext";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -12,7 +13,7 @@ export default function LoginPage() {
 
   const navigate = useNavigate(); 
   const { login } = useContext(UserContext); // get login function from context
-
+  const { fetchCart } = useCart();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,11 +23,15 @@ export default function LoginPage() {
           password: password, 
       })
 
+      console.log(response);
+
+      fetchCart(response.data.id);
+
       const token = response.data.token;
       if (!token) {
         alert("Login failed. Please try again.");
       } else {
-        login(token); 
+        login(token,  response.data.id); // call login function from context
         navigate("/");
       }
     } catch (error) {
