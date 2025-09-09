@@ -21,12 +21,13 @@ public class CartController {
     }
 
     @DeleteMapping("/remove")
-    public CartDTO removeProduct(@RequestBody RemoveFromCartRequest request) {
-        return cartService.removeProductFromCart(request.getUserId(), request.getProductId());
+    public CartDTO removeProduct(@RequestParam String userId,
+                                @RequestParam String productId) {
+        return cartService.removeProductFromCart(userId, productId);
     }
 
     // Update quantity
-    @PutMapping("/update")
+    @PutMapping
     public CartDTO updateQuantity(@RequestBody UpdateQuantityRequest request) {
         return cartService.updateProductQuantity(request.getUserId(), request.getProductId(), request.getQuantity());
     }
