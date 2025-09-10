@@ -1,13 +1,20 @@
 package com.nus.sellr.order.service;
 
+import com.nus.sellr.cart.dto.CartDTO;
+import com.nus.sellr.cart.dto.CartItemDTO;
+import com.nus.sellr.cart.service.CartService;
 import com.nus.sellr.order.dto.*;
 import com.nus.sellr.order.entity.Order;
 import com.nus.sellr.order.entity.OrderItem;
+import com.nus.sellr.order.entity.OrderStatus;
 import com.nus.sellr.order.repository.OrderRepository;
+import com.nus.sellr.product.dto.ProductResponse;
+import com.nus.sellr.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -16,6 +23,8 @@ import java.util.stream.Collectors;
 public class OrderService {
 
     private final OrderRepository orderRepository;
+    private final CartService cartService;
+    private final ProductService productService;
 
     public OrderResponseDTO createOrder(CreateOrderDTO createOrderDTO) {
         Order order = new Order(createOrderDTO.getUserId());
@@ -88,7 +97,7 @@ public class OrderService {
         dto.setOrderPrice(order.getOrderPrice());
         dto.setCreatedAt(order.getCreatedAt());
         dto.setItems(order.getItems().stream().map(i -> {
-            OrderItemResponseDTO itemDTO = new OrderItemResponseDTO();
+            OrderItem itemDTO = new OrderItem();
             itemDTO.setProductId(i.getProductId());
             itemDTO.setQuantity(i.getQuantity());
             itemDTO.setShippingFee(i.getShippingFee());
@@ -100,4 +109,57 @@ public class OrderService {
         }).collect(Collectors.toList()));
         return dto;
     }
+
+    public OrderResponseDTO checkout(String userId) {
+        // 1. Get cart
+        CartDTO cart = cartService.getCartByUserId(userId);
+        if (cart.getItems().isEmpty()) {
+            throw new RuntimeException("Cart is empty");
+        }
+
+        List<OrderItem> orderItems = cart.getItems().stream()
+                .map(this::createOrderItemFromCartItem)
+                .collect(Collectors.toList());
+
+        // 3. Calculate total price
+        BigDecimal totalPrice = orderItems.stream()
+                .map(i -> BigDecimal.valueOf(0)
+                        .add(getProductPrice(i.getProductId())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        // 4. Create Order
+        Order order = new Order(userId);
+        order.setItems(orderItems);
+        order.setOrderPrice(BigDecimal.valueOf(totalPrice.doubleValue())); // or keep BigDecimal in entity
+        order.setCreatedAt(LocalDateTime.now());
+
+        // 5. Save Order
+        Order savedOrder = orderRepository.save(order);
+
+        OrderResponseDTO orderResponseDTO = new OrderResponseDTO();
+        orderResponseDTO.setOrderId(savedOrder.getId());
+        orderResponseDTO.setOrderPrice(savedOrder.getOrderPrice());
+
+        // 6. Clear cart
+        cartService.clearCart(userId);
+
+        return orderResponseDTO;
+    }
+
+    private OrderItem createOrderItemFromCartItem(CartItemDTO cartItem) {
+        ProductResponse product = productService.getProductById(cartItem.getProductId());
+
+        OrderItem orderItem = new OrderItem();
+        orderItem.setProductId(product.getId());
+        orderItem.setQuantity(cartItem.getQuantity());
+        orderItem.setShippingFee(BigDecimal.valueOf(0));
+        orderItem.setStatus(OrderStatus.PENDING);
+        return orderItem;
+    }
+
+    private BigDecimal getProductPrice(String productId) {
+        ProductResponse product = productService.getProductById(productId);
+        return BigDecimal.valueOf(product.getPrice());
+    }
+
 }

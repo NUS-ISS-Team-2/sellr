@@ -1,7 +1,6 @@
 package com.nus.sellr.order.repository;
 
 import com.nus.sellr.order.entity.Order;
-import com.nus.sellr.product.entity.Product;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.List;

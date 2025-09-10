@@ -27,6 +27,7 @@ export function ContextProvider({ children }) {
 
     setUserId(userId);
     sessionStorage.setItem("userId", userId);
+    console.log(userId);
   };
 
   // logout function

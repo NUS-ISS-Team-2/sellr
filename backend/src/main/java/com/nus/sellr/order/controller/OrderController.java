@@ -1,7 +1,6 @@
 package com.nus.sellr.order.controller;
 
 import com.nus.sellr.order.dto.*;
-import com.nus.sellr.order.entity.Order;
 import com.nus.sellr.order.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -49,5 +48,11 @@ public class OrderController {
     public ResponseEntity<Void> addReviewToOrderItem(@RequestBody AddReviewDTO reviewDTO) {
         orderService.addReviewToOrderItem(reviewDTO);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/checkout")
+    public ResponseEntity<OrderResponseDTO> checkout(@RequestBody CheckoutRequestDTO checkoutRequestDTO) {
+        OrderResponseDTO orderResponseDTO = orderService.checkout(checkoutRequestDTO.getUserId());
+        return ResponseEntity.ok(orderResponseDTO);
     }
 }
