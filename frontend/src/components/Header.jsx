@@ -1,5 +1,5 @@
 import React, { useContext, useState, useRef, useEffect } from "react";
-import { Link, useNavigate  } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { UserContext } from "../context/UserContext";
 import CartButton from "./CartButton";
 import { useCart } from "../context/CartContext";
@@ -8,7 +8,7 @@ export default function Header() {
   const { username, logout } = useContext(UserContext);
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
   const { clearCart } = useCart(); // use the cart hook
 
   // Close dropdown when clicking outside
@@ -24,8 +24,8 @@ export default function Header() {
 
   const handleLogout = () => {
     logout(navigate);
-    clearCart(); 
-    
+    clearCart();
+
   }
 
   return (
@@ -35,6 +35,9 @@ export default function Header() {
 
 
         <div className="relative flex items-center space-x-4">
+          <nav className="space-x-4 font-medium">
+            <Link to="/products" className="hover:text-gray-200">Shop</Link>
+          </nav>
           {username ? (
             <>
               {/* User dropdown */}
@@ -59,7 +62,7 @@ export default function Header() {
               </div>
 
               {/* Cart only if logged in */}
-              <CartButton/>
+              <CartButton />
             </>
           ) : (
             // If not logged in, show Login
@@ -80,6 +83,9 @@ export default function Header() {
               >
                 <Link to="/register">Register</Link>
               </button>
+              <nav className="space-x-4 font-medium">
+                <Link to="/contact" className="hover:text-gray-200">Help</Link>
+              </nav>
             </div>
           )}
         </div>
