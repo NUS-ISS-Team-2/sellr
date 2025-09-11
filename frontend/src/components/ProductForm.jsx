@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
+import { UserContext } from "../context/UserContext";
 import axios from "axios";
 
 export default function ProductForm({ onProductAdded, initialData }) {
@@ -6,17 +7,20 @@ export default function ProductForm({ onProductAdded, initialData }) {
   const [description, setDescription] = useState(initialData?.description || "");
   const [price, setPrice] = useState(initialData?.price || "");
   const [imageUrl, setImageUrl] = useState(initialData?.imageUrl || "");
+  const { userId } = useContext(UserContext); 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!imageUrl) return alert("Please provide an image URL");
+    console.log(userId);
 
     const productData = {
       name,
       description,
       price: Number(price),
       imageUrl,
+      sellerId: userId 
     };
 
     try {

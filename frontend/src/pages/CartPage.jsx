@@ -4,10 +4,14 @@ import Footer from "../components/Footer";
 import { useCart } from "../context/CartContext";
 import { useContext } from "react";
 import { UserContext } from "../context/UserContext";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 export default function CartPage() {
   const { cartItems, updateCart, removeFromCart } = useCart();
   const { userId } = useContext(UserContext);
+  const navigate = useNavigate();
+  const { clearCart } = useCart();
 
   // Loading state if cartItems is undefined
   if (!cartItems) {
@@ -77,6 +81,20 @@ export default function CartPage() {
     0
   );
 
+  const handleCheckout = async () => {
+    await axios.post(`http://localhost:8080/api/orders/checkout`, {
+      userId
+    }).then((res) => {
+      clearCart(); 
+      console.log(res.data.orderId)
+      
+      navigate("/orderCreated", { state: { orderId: res.data.orderId } });
+    }).catch((err) => {
+      console.error("Error during checkout:", err);
+      alert("Checkout failed. Please try again.");
+    })
+  }
+
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
       <Header />
@@ -98,7 +116,7 @@ export default function CartPage() {
             <p className="mb-2">Items: {totalItems}</p>
             <p className="mb-4 font-semibold">Subtotal: ${subtotal.toFixed(2)}</p>
 
-            <button className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
+            <button className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700" onClick={() => handleCheckout()}>
               Proceed to Checkout
             </button>
           </div>

@@ -1,13 +1,15 @@
 import React, { useContext, useState, useRef, useEffect } from "react";
-import { Link, useNavigate  } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { UserContext } from "../context/UserContext";
 import CartButton from "./CartButton";
+import { useCart } from "../context/CartContext";
 
 export default function Header() {
   const { username, logout } = useContext(UserContext);
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
+  const { clearCart } = useCart(); // use the cart hook
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -20,16 +22,27 @@ export default function Header() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const handleLogout = () => {
+    logout(navigate);
+    clearCart();
+
+  }
+
+  const handleViewOrder = () => {
+    navigate("/myorders");
+    setIsOpen(false);
+  }
+
   return (
     <header className="bg-blue-600 text-white">
       <div className="container mx-auto flex items-center justify-between px-6 py-4">
         <h1 className="text-2xl font-bold"><Link to="/">sellr</Link></h1>
 
-        <nav className="space-x-6 font-medium">
-          <Link to="/products" className="hover:text-gray-200">Shop</Link>
-          <Link to="/contact" className="hover:text-gray-200">Contact</Link>
-        </nav>
+
         <div className="relative flex items-center space-x-4">
+          <nav className="space-x-4 font-medium">
+            <Link to="/products" className="hover:text-gray-200">Shop</Link>
+          </nav>
           {username ? (
             <>
               {/* User dropdown */}
@@ -44,17 +57,24 @@ export default function Header() {
                 {isOpen && (
                   <div className="absolute right-0 mt-2 w-32 bg-white text-black rounded shadow-lg z-10">
                     <button
-                      onClick={() => logout(navigate)}
+                      onClick={() => handleViewOrder()}
+                      className="w-full text-left px-4 py-2 hover:bg-gray-200"
+                    >
+                      View Orders
+                    </button>
+                    <button
+                      onClick={() => handleLogout()}
                       className="w-full text-left px-4 py-2 hover:bg-gray-200"
                     >
                       Logout
                     </button>
+
                   </div>
                 )}
               </div>
 
               {/* Cart only if logged in */}
-              <CartButton/>
+              <CartButton />
             </>
           ) : (
             // If not logged in, show Login
@@ -75,6 +95,9 @@ export default function Header() {
               >
                 <Link to="/register">Register</Link>
               </button>
+              <nav className="space-x-4 font-medium">
+                <Link to="/contact" className="hover:text-gray-200">Help</Link>
+              </nav>
             </div>
           )}
         </div>
