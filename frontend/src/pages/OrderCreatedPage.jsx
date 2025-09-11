@@ -89,7 +89,7 @@ export default function OrderCreatedPage() {
 
                 <div className="mt-6">
                     <Link
-                        to="/orders"
+                        to="/myorders"
                         className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
                     >
                         View All Orders

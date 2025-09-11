@@ -28,6 +28,11 @@ export default function Header() {
 
   }
 
+  const handleViewOrder = () => {
+    navigate("/myorders");
+    setIsOpen(false);
+  }
+
   return (
     <header className="bg-blue-600 text-white">
       <div className="container mx-auto flex items-center justify-between px-6 py-4">
@@ -52,11 +57,18 @@ export default function Header() {
                 {isOpen && (
                   <div className="absolute right-0 mt-2 w-32 bg-white text-black rounded shadow-lg z-10">
                     <button
+                      onClick={() => handleViewOrder()}
+                      className="w-full text-left px-4 py-2 hover:bg-gray-200"
+                    >
+                      View Orders
+                    </button>
+                    <button
                       onClick={() => handleLogout()}
                       className="w-full text-left px-4 py-2 hover:bg-gray-200"
                     >
                       Logout
                     </button>
+
                   </div>
                 )}
               </div>

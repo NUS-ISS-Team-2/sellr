@@ -29,11 +29,10 @@ public class OrderService {
     public OrderResponseDTO createOrder(CreateOrderDTO createOrderDTO) {
         Order order = new Order(createOrderDTO.getUserId());
 
-        // Convert DTO items to entities
-        List<OrderItem> items = createOrderDTO.getItems().stream().map(dto -> {
-            OrderItem item = new OrderItem(dto.getProductId(), dto.getQuantity(), dto.getShippingFee());
-            return item;
-        }).collect(Collectors.toList());
+        // Convert DTO items to entities (only store productId, quantity, shippingFee)
+        List<OrderItem> items = createOrderDTO.getItems().stream()
+                .map(dto -> new OrderItem(dto.getProductId(), dto.getQuantity(), dto.getShippingFee(), null))
+                .collect(Collectors.toList());
 
         order.setItems(items);
         order.setOrderPrice(calculateTotal(items));
@@ -86,32 +85,46 @@ public class OrderService {
 
     private BigDecimal calculateTotal(List<OrderItem> items) {
         return items.stream()
-                .map(OrderItem::getShippingFee) // add product price if available
+                .map(OrderItem::getShippingFee)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
+    // ----------------------
+    // Convert Order -> OrderResponseDTO
     private OrderResponseDTO toResponseDTO(Order order) {
         OrderResponseDTO dto = new OrderResponseDTO();
         dto.setOrderId(order.getId());
         dto.setUserId(order.getUserId());
         dto.setOrderPrice(order.getOrderPrice());
         dto.setCreatedAt(order.getCreatedAt());
-        dto.setItems(order.getItems().stream().map(i -> {
-            OrderItem itemDTO = new OrderItem();
-            itemDTO.setProductId(i.getProductId());
-            itemDTO.setQuantity(i.getQuantity());
-            itemDTO.setShippingFee(i.getShippingFee());
-            itemDTO.setDeliveryDate(i.getDeliveryDate());
-            itemDTO.setStatus(i.getStatus());
-            itemDTO.setRating(i.getRating());
-            itemDTO.setReview(i.getReview());
-            return itemDTO;
-        }).collect(Collectors.toList()));
+
+        List<OrderItemDTO> itemDTOs = order.getItems().stream()
+                .map(this::toOrderItemDTO)
+                .collect(Collectors.toList());
+        dto.setItems(itemDTOs);
+
+        return dto;
+    }
+
+    // Convert OrderItem -> OrderItemDTO dynamically
+    private OrderItemDTO toOrderItemDTO(OrderItem item) {
+        ProductResponse product = productService.getProductById(item.getProductId());
+
+        OrderItemDTO dto = new OrderItemDTO();
+        dto.setProductId(item.getProductId());
+        dto.setProductName(product.getName());
+        dto.setImageUrl(product.getImageUrl());
+        dto.setQuantity(item.getQuantity());
+        dto.setShippingFee(item.getShippingFee());
+        dto.setStatus(item.getStatus());
+        dto.setDeliveryDate(item.getDeliveryDate());
+        dto.setRating(item.getRating());
+        dto.setReview(item.getReview());
+
         return dto;
     }
 
     public OrderResponseDTO checkout(String userId) {
-        // 1. Get cart
         CartDTO cart = cartService.getCartByUserId(userId);
         if (cart.getItems().isEmpty()) {
             throw new RuntimeException("Cart is empty");
@@ -121,45 +134,33 @@ public class OrderService {
                 .map(this::createOrderItemFromCartItem)
                 .collect(Collectors.toList());
 
-        // 3. Calculate total price
         BigDecimal totalPrice = orderItems.stream()
-                .map(i -> BigDecimal.valueOf(0)
-                        .add(getProductPrice(i.getProductId())))
+                .map(this::getProductPriceFromItem)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        // 4. Create Order
         Order order = new Order(userId);
         order.setItems(orderItems);
-        order.setOrderPrice(BigDecimal.valueOf(totalPrice.doubleValue())); // or keep BigDecimal in entity
+        order.setOrderPrice(totalPrice);
         order.setCreatedAt(LocalDateTime.now());
 
-        // 5. Save Order
         Order savedOrder = orderRepository.save(order);
 
-        OrderResponseDTO orderResponseDTO = new OrderResponseDTO();
-        orderResponseDTO.setOrderId(savedOrder.getId());
-        orderResponseDTO.setOrderPrice(savedOrder.getOrderPrice());
-
-        // 6. Clear cart
         cartService.clearCart(userId);
 
-        return orderResponseDTO;
+        return toResponseDTO(savedOrder);
     }
 
     private OrderItem createOrderItemFromCartItem(CartItemDTO cartItem) {
-        ProductResponse product = productService.getProductById(cartItem.getProductId());
-
         OrderItem orderItem = new OrderItem();
-        orderItem.setProductId(product.getId());
+        orderItem.setProductId(cartItem.getProductId());
         orderItem.setQuantity(cartItem.getQuantity());
         orderItem.setShippingFee(BigDecimal.valueOf(0));
         orderItem.setStatus(OrderStatus.PENDING);
         return orderItem;
     }
 
-    private BigDecimal getProductPrice(String productId) {
-        ProductResponse product = productService.getProductById(productId);
+    private BigDecimal getProductPriceFromItem(OrderItem item) {
+        ProductResponse product = productService.getProductById(item.getProductId());
         return BigDecimal.valueOf(product.getPrice());
     }
-
 }

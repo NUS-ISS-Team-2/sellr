@@ -9,12 +9,14 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
-public class OrderItemResponseDTO {
+public class OrderItemDTO {
     private String productId;
+    private String productName;
+    private String imageUrl;
     private int quantity;
     private BigDecimal shippingFee;
-    private LocalDateTime deliveryDate;
     private OrderStatus status;
+    private LocalDateTime deliveryDate;
     private Integer rating;
     private String review;
 }

@@ -9,6 +9,6 @@ import java.util.List;
 @Setter
 public class CreateOrderDTO {
     private String userId;
-    private List<CreateOrderItemDTO> items;
+    private List<OrderItemDTO> items;
 }
 

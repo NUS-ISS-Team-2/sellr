@@ -16,14 +16,15 @@ public class OrderItem {
     private String review;
     private LocalDateTime deliveryDate;
     private OrderStatus status;
+    private String imageUrl;
 
     public OrderItem() {}
 
-    public OrderItem(String productId, int quantity, BigDecimal shippingFee) {
+    public OrderItem(String productId, int quantity, BigDecimal shippingFee, String imageUrl) {
         this.productId = productId;
         this.quantity = quantity;
         this.shippingFee = shippingFee;
         this.status = OrderStatus.PENDING;
-
+        this.imageUrl = imageUrl;
     }
 }
