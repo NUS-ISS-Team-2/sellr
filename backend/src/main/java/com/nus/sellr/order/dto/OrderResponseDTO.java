@@ -1,6 +1,9 @@
 package com.nus.sellr.order.dto;
 
 import com.nus.sellr.order.entity.OrderStatus;
+import com.nus.sellr.order.entity.PaymentDetails;
+import com.nus.sellr.order.entity.Address;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -17,4 +20,7 @@ public class OrderResponseDTO {
     private BigDecimal orderPrice;
     private LocalDateTime createdAt;
     private OrderStatus overallStatus;
+    private Address address;
+    private String paymentMethod;
+    private PaymentDetails paymentDetails;
 }
