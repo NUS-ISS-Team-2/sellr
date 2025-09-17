@@ -52,7 +52,10 @@ public class OrderController {
 
     @PostMapping("/checkout")
     public ResponseEntity<OrderResponseDTO> checkout(@RequestBody CheckoutRequestDTO checkoutRequestDTO) {
-        OrderResponseDTO orderResponseDTO = orderService.checkout(checkoutRequestDTO.getUserId());
+        OrderResponseDTO orderResponseDTO = orderService.checkout(checkoutRequestDTO.getUserId()
+        
+        
+        );
         return ResponseEntity.ok(orderResponseDTO);
     }
 }

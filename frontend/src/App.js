@@ -11,6 +11,7 @@ import CartPage from "./pages/CartPage";
 import { CartProvider } from "./context/CartContext";
 import OrderCreatedPage from "./pages/OrderCreatedPage";
 import OrdersPage from "./pages/OrdersPage";
+import CheckoutPage from "./pages/CheckoutPage";
 
 export default function App() {
   return (
@@ -26,6 +27,7 @@ export default function App() {
           <Route path="/products/:id" element={<ProductDetailPage />} />
           <Route path="/orderCreated" element={<OrderCreatedPage/>} />
           <Route path="/myorders" element={<OrdersPage/>} />
+          <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Router>
