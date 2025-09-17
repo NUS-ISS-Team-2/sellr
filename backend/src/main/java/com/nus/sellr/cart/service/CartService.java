@@ -137,5 +137,5 @@ public class CartService {
             .filter(dto -> dto != null)
             .collect(Collectors.toList());
         return new CartDTO(cart.getUserId(), itemDTOs);
-        }
+    }
 }
