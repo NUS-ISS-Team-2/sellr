@@ -23,6 +23,7 @@ public class ProductMapper {
         dto.setCategory(product.getCategory());
         dto.setStock(product.getStock());
         dto.setSellerId(product.getSellerId());
+        dto.setLowStock(product.getStock() < 20);
         return dto;
     }
 

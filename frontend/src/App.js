@@ -12,6 +12,7 @@ import { CartProvider } from "./context/CartContext";
 import OrderCreatedPage from "./pages/OrderCreatedPage";
 import OrdersPage from "./pages/OrdersPage";
 import CheckoutPage from "./pages/CheckoutPage";
+import ProductManagementPage from "./pages/ProductManagementPage";
 
 export default function App() {
   return (
@@ -19,6 +20,7 @@ export default function App() {
       <CartProvider>
       <Router basename="/app">
         <Routes>
+          <Route path="/product-management" element={<ProductManagementPage />} />
           <Route path="/" element={<MainPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />

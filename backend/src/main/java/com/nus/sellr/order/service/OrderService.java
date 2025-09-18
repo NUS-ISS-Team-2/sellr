@@ -9,6 +9,7 @@ import com.nus.sellr.order.entity.OrderItem;
 import com.nus.sellr.order.entity.OrderStatus;
 import com.nus.sellr.order.repository.OrderRepository;
 import com.nus.sellr.product.dto.ProductResponse;
+import com.nus.sellr.product.entity.Product;
 import com.nus.sellr.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -67,6 +68,13 @@ public class OrderService {
         order.setCreatedAt(LocalDateTime.now());
 
         Order savedOrder = orderRepository.save(order);
+
+        for (OrderItem item : savedOrder.getItems()) {
+            Product product = productService.getProductEntityById(item.getProductId());
+            int updatedStock = product.getStock() - item.getQuantity();
+            product.setStock(Math.max(0, updatedStock));  // prevent negative stock
+            productService.saveProduct(product);
+        }
 
         cartService.clearCart(request.getUserId());
 
@@ -195,6 +203,13 @@ public class OrderService {
         order.setCreatedAt(LocalDateTime.now());
 
         Order savedOrder = orderRepository.save(order);
+
+        for (OrderItem item : savedOrder.getItems()) {
+            Product product = productService.getProductEntityById(item.getProductId());
+            int updatedStock = product.getStock() - item.getQuantity();
+            product.setStock(Math.max(0, updatedStock));
+            productService.saveProduct(product);
+        }
 
         cartService.clearCart(userId);
 
