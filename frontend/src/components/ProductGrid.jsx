@@ -22,6 +22,7 @@ export default function ProductGrid({ products = [] }) {
         {products.map((product) => {
           const cartItem = cartItems.find((item) => item.productId === product.id);
           const quantity = cartItem?.quantity || 0;
+          const inStock = Number(product?.stock ?? 0) > 0; // <-- define it here
 
           return (
             <div
@@ -46,32 +47,42 @@ export default function ProductGrid({ products = [] }) {
                 </div>
               </Link>
 
-              <div className="px-4 pb-4">
-                {quantity === 0 ? (
-                  <button
-                    onClick={() => addToCart(userId, product)}
-                    className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
-                  >
-                    Add to Cart
-                  </button>
-                ) : (
-                  <div className="flex items-center space-x-2">
-                    <span>{quantity}</span>
+              {/* Cart Controls */}
+                {/* <div className="mt-5 flex items-center gap-2">
+                  {quantity === 0 ? (
                     <button
-                      onClick={() => updateCart(userId, product.id, 1)}
-                      className="bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600 transition"
+                      onClick={() => addToCart(userId, product)}
+                      disabled={!inStock}
+                      className={`w-full py-2 rounded text-white ${inStock ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-400 cursor-not-allowed"
+                        }`}
                     >
-                      +
+                      Add to Cart
                     </button>
-                    <button
-                      onClick={() => updateCart(userId, product.id, -1)}
-                      className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 transition"
-                    >
-                      -
-                    </button>
-                  </div>
-                )}
-              </div>
+                  ) : (
+                    <div className="flex items-center space-x-2">
+                      
+                      <button
+                        onClick={() => updateCart(userId, product.id, 1)}
+                        disabled={!inStock || quantity >= product.stock}
+                        className={`px-2 py-1 rounded text-white ${inStock && quantity < product.stock
+                            ? "bg-green-500 hover:bg-green-600"
+                            : "bg-gray-400 cursor-not-allowed"
+                          }`}
+                      >
+                        +
+                      </button>
+                      <span>{quantity}</span>
+                      <button
+                        onClick={() => updateCart(userId, product.id, -1)}
+                        disabled={quantity <= 0}
+                        className={`px-2 py-1 rounded text-white ${quantity > 0 ? "bg-red-500 hover:bg-red-600" : "bg-gray-400 cursor-not-allowed"
+                          }`}
+                      >
+                        -
+                      </button>
+                    </div>
+                  )}
+                </div> */}
             </div>
           );
         })}

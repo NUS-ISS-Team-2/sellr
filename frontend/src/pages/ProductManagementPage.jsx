@@ -80,7 +80,7 @@ export default function ProductManagementPage() {
                             <th className="border px-4 py-2">Category</th>
                             <th className="border px-4 py-2">Price</th>
                             <th className="border px-4 py-2">Stock</th>
-                            <th className="border px-4 py-2">Low Stock</th>
+                            <th className="border px-4 py-2">Stock Status</th>
                             <th className="border px-4 py-2">Actions</th>
                         </tr>
                     </thead>
@@ -92,40 +92,54 @@ export default function ProductManagementPage() {
                                 </td>
                             </tr>
                         ) : (
-                            products.map((p) => (
-                                <tr key={p.id} className="border-t">
-                                    <td className="border px-4 py-2">{p.name}</td>
-                                    <td className="border px-4 py-2">{p.category}</td>
-                                    <td className="border px-4 py-2">${p.price.toFixed(2)}</td>
-                                    <td className="border px-4 py-2">{p.stock}</td>
-                                    <td className="border px-4 py-2">{p.lowStock ? "⚠️ Low" : ""}</td>
-                                    <td className="border px-4 py-2 space-x-2">
-                                        <button
-                                            onClick={() => setViewProduct(p)}
-                                            className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
-                                        >
-                                            View
-                                        </button>
-                                        <button
-                                            onClick={() => {
-                                                setEditingProduct(p);
-                                                setShowForm(true);
-                                            }}
-                                            className="px-2 py-1 bg-yellow-400 rounded hover:bg-yellow-500"
-                                        >
-                                            Edit
-                                        </button>
-                                        <button
-                                            onClick={() => handleDeleteProduct(p.id)}
-                                            className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-                                        >
-                                            Delete
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))
+                            products.map((p) => {
+                                const isOutOfStock = p.stock <= 0;
+                                const isLowStock = !isOutOfStock && p.stock <= 20; // example low stock threshold
+
+                                return (
+                                    <tr key={p.id} className="border-t">
+                                        <td className="border px-4 py-2">{p.name}</td>
+                                        <td className="border px-4 py-2">{p.category}</td>
+                                        <td className="border px-4 py-2">${p.price.toFixed(2)}</td>
+                                        <td className="border px-4 py-2">{p.stock}</td>
+                                        <td className="border px-4 py-2">
+                                            {isOutOfStock ? (
+                                                <span className="text-red-600 font-semibold">Out of Stock</span>
+                                            ) : isLowStock ? (
+                                                <span className="text-yellow-600 font-semibold">⚠️ Low</span>
+                                            ) : (
+                                                ""
+                                            )}
+                                        </td>
+                                        <td className="border px-4 py-2 space-x-2">
+                                            <button
+                                                onClick={() => setViewProduct(p)}
+                                                className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+                                            >
+                                                View
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    setEditingProduct(p);
+                                                    setShowForm(true);
+                                                }}
+                                                className="px-2 py-1 bg-yellow-400 rounded hover:bg-yellow-500"
+                                            >
+                                                Edit
+                                            </button>
+                                            <button
+                                                onClick={() => handleDeleteProduct(p.id)}
+                                                className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                                            >
+                                                Delete
+                                            </button>
+                                        </td>
+                                    </tr>
+                                );
+                            })
                         )}
                     </tbody>
+
                 </table>
 
                 {/* Product Form Modal */}

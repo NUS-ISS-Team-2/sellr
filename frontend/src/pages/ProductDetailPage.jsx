@@ -131,30 +131,52 @@ export default function ProductDetailPage() {
                 <p className="text-gray-700 mt-3">{product?.description || "No description provided."}</p>
                 <p className="text-2xl font-bold mt-4">${Number(product?.price ?? 0).toLocaleString()}</p>
 
+
+                {/* Stock Info */}
+                <div className="mt-2 flex items-center gap-2">
+                  {inStock ? (
+                    <span className="inline-block text-sm px-2 py-1 rounded-full bg-green-100 text-green-700">
+                      Stock: {product.lowStock && "⚠️ Low"}
+                    </span>
+                  ) : (
+                    <span className="inline-block text-sm px-2 py-1 rounded-full bg-gray-100 text-gray-500">
+                      Out of Stock
+                    </span>
+                  )}
+                </div>
+
+
+
                 {/* Cart Controls */}
-                <div className="mt-5">
+                <div className="mt-5 flex items-center gap-2">
                   {quantity === 0 ? (
                     <button
                       onClick={() => addToCart(userId, product)}
                       disabled={!inStock}
-                      className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+                      className={`w-full py-2 rounded text-white ${inStock ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-400 cursor-not-allowed"
+                        }`}
                     >
                       Add to Cart
                     </button>
                   ) : (
                     <div className="flex items-center space-x-2">
-                      <span>{quantity}</span>
+                      
                       <button
                         onClick={() => updateCart(userId, product.id, 1)}
                         disabled={!inStock || quantity >= product.stock}
-                        className="bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600"
+                        className={`px-2 py-1 rounded text-white ${inStock && quantity < product.stock
+                            ? "bg-green-500 hover:bg-green-600"
+                            : "bg-gray-400 cursor-not-allowed"
+                          }`}
                       >
                         +
                       </button>
+                      <span>{quantity}</span>
                       <button
                         onClick={() => updateCart(userId, product.id, -1)}
-                        disabled={!inStock || quantity <= 0}
-                        className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
+                        disabled={quantity <= 0}
+                        className={`px-2 py-1 rounded text-white ${quantity > 0 ? "bg-red-500 hover:bg-red-600" : "bg-gray-400 cursor-not-allowed"
+                          }`}
                       >
                         -
                       </button>
