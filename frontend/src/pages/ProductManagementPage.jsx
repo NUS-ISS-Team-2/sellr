@@ -11,8 +11,6 @@ export default function ProductManagementPage() {
     const [confirmDelete, setConfirmDelete] = useState(null);
     const [viewProduct, setViewProduct] = useState(null);
 
-    const { role } = useContext(UserContext);
-
     const API_URL = "http://localhost:8080/api/products";
 
     // Fetch products from backend
