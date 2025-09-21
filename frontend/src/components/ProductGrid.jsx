@@ -1,12 +1,10 @@
 // ProductGrid.jsx
 import { Link } from "react-router-dom";
 import { useCart } from "../context/CartContext";
-import { UserContext } from "../context/UserContext";
-import { useContext, useEffect } from "react";
+import { useEffect } from "react";
 
 export default function ProductGrid({ products = [] }) {
-  const { cartItems, updateCart, addToCart } = useCart();
-  const { userId } = useContext(UserContext);
+  const { cartItems } = useCart();
 
   useEffect(() => {
     console.log("Cart Items:", cartItems);
@@ -20,10 +18,6 @@ export default function ProductGrid({ products = [] }) {
       <h2 className="text-2xl font-bold mb-4">Browse Products</h2>
       <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
         {products.map((product) => {
-          const cartItem = cartItems.find((item) => item.productId === product.id);
-          const quantity = cartItem?.quantity || 0;
-          const inStock = Number(product?.stock ?? 0) > 0; // <-- define it here
-
           return (
             <div
               key={product.id}
