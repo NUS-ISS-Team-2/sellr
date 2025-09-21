@@ -1,6 +1,7 @@
 package com.nus.sellr.order.controller;
 
 import com.nus.sellr.order.dto.*;
+import com.nus.sellr.order.entity.OrderStatus;
 import com.nus.sellr.order.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -50,15 +51,31 @@ public class OrderController {
         return ResponseEntity.noContent().build();
     }
 
-    // @PostMapping("/checkout")
-    // public ResponseEntity<OrderResponseDTO> checkout(@RequestBody CheckoutRequestDTO checkoutRequestDTO) {
-    //     OrderResponseDTO orderResponseDTO = orderService.checkout(checkoutRequestDTO.getUserId());
-    //     return ResponseEntity.ok(orderResponseDTO);
-    // }
-
     @PostMapping("/checkout")
     public ResponseEntity<OrderResponseDTO> checkout(@RequestBody CheckoutRequestDTO checkoutRequestDTO) {
         OrderResponseDTO orderResponseDTO = orderService.checkout(checkoutRequestDTO);
         return ResponseEntity.ok(orderResponseDTO);
+    }
+
+    @GetMapping("/seller")
+    public ResponseEntity<List<OrderResponseDTO>> getOrdersForSeller(@RequestParam String sellerId) {
+        List<OrderResponseDTO> orders = orderService.getOrdersForSeller(sellerId);
+
+        if (orders.isEmpty()) {
+            return ResponseEntity.noContent().build(); // 204 No Content
+        }
+
+        return ResponseEntity.ok(orders); // 200 OK with list
+    }
+
+    // Seller updates status of their item
+    @PutMapping("/seller/status")
+    public void updateItemStatus(@RequestBody UpdateOrderItemStatusDTO request) {
+        orderService.updateOrderItemStatusAsSeller(
+                request.getOrderId(),
+                request.getProductId(),
+                request.getSellerId(),
+                request.getStatus()
+        );
     }
 }

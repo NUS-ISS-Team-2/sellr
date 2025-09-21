@@ -19,4 +19,5 @@ public class OrderItemDTO {
     private LocalDateTime deliveryDate;
     private Integer rating;
     private String review;
+    private String sellerId;
 }

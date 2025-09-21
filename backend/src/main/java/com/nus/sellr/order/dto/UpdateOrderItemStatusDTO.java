@@ -12,5 +12,6 @@ public class UpdateOrderItemStatusDTO {
     private String orderId;
     private String productId;
     private OrderStatus status;
+    private String sellerId;
     private LocalDateTime deliveryDate; // optional
 }
