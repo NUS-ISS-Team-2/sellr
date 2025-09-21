@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useState, useContext, useEffect } from "react";
 import axios from "axios";
+import { UserContext } from "../context/UserContext";
 import Header from "../components/Header";
 
 export default function OrderManagementPage() {
@@ -8,16 +9,20 @@ export default function OrderManagementPage() {
 
   const API_URL = "http://localhost:8080/api/orders"; // base URL
 
+  const { userId } = useContext(UserContext);
+
   useEffect(() => {
     fetchOrders();
-  }, []);
+  }, [userId]);
 
   const fetchOrders = async () => {
     try {
-      const sellerId = "68a460b575cab07c0cf94894"; // replace as needed
+      const sellerId = userId; 
       const res = await axios.get(`${API_URL}/seller`, {
         params: { sellerId },
       });
+
+      console.log(res);
       setOrders(res.data);
     } catch (err) {
       console.error("Failed to fetch orders:", err);
@@ -26,7 +31,7 @@ export default function OrderManagementPage() {
 
   const handleMarkAsShipped = async (orderId, productId) => {
     try {
-      const sellerId = "68a460b575cab07c0cf94894"; // replace with actual sellerId
+      const sellerId = userId; 
       await axios.put(`${API_URL}/seller/status`, {
         orderId,
         productId,
