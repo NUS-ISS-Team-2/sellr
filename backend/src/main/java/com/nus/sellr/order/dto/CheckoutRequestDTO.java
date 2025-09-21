@@ -1,5 +1,9 @@
 package com.nus.sellr.order.dto;
 
+import java.util.List;
+
+import com.nus.sellr.order.entity.PaymentDetails;
+import com.nus.sellr.order.entity.Address;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -7,6 +11,9 @@ import lombok.Setter;
 @Setter
 public class CheckoutRequestDTO {
     private String userId;
-    private String shippingAddress; // optional for now
-    private String paymentMethod;   // optional for now (e.g. "CASH_ON_DELIVERY")
+    private Address address;
+    private String paymentMethod;
+    private PaymentDetails paymentDetails;
+    private List<OrderItemDTO> items;
+    private double subtotal;
 }

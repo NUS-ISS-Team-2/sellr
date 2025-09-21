@@ -98,20 +98,44 @@ public class CartService {
 
     // -----------------------
     // Helper: Convert Cart -> CartDTO
+    // private CartDTO convertToDTO(Cart cart) {
+    //     List<CartItemDTO> items = cart.getItems().stream().map(item -> {
+    //         Product product = productRepository.findById(item.getProductId())
+    //                 .orElseThrow(() -> new RuntimeException("Product not found"));
+
+    //         return new CartItemDTO(
+    //                 product.getId(),
+    //                 product.getName(),
+    //                 product.getImageUrl(),
+    //                 product.getPrice(),
+    //                 item.getQuantity()
+    //         );
+    //     }).collect(Collectors.toList());
+
+    //     return new CartDTO(cart.getUserId(), items);
+    // }
+
+    // ...existing code...
     private CartDTO convertToDTO(Cart cart) {
-        List<CartItemDTO> items = cart.getItems().stream().map(item -> {
-            Product product = productRepository.findById(item.getProductId())
-                    .orElseThrow(() -> new RuntimeException("Product not found"));
-
-            return new CartItemDTO(
-                    product.getId(),
-                    product.getName(),
-                    product.getImageUrl(),
-                    product.getPrice(),
-                    item.getQuantity()
-            );
-        }).collect(Collectors.toList());
-
-        return new CartDTO(cart.getUserId(), items);
+        List<CartItemDTO> itemDTOs = cart.getItems().stream()
+            .map(item -> {
+                Optional<Product> productOpt = productRepository.findById(item.getProductId());
+                if (productOpt.isPresent()) {
+                    Product product = productOpt.get();
+                    return new CartItemDTO(
+                        product.getId(),
+                        product.getName(),
+                        product.getImageUrl(),
+                        product.getPrice(),
+                        item.getQuantity()
+                    );
+                } else {
+                    // Optionally log missing product
+                    return null; // skip this item
+                }
+            })
+            .filter(dto -> dto != null)
+            .collect(Collectors.toList());
+        return new CartDTO(cart.getUserId(), itemDTOs);
     }
 }

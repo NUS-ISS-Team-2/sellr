@@ -22,6 +22,11 @@ public class Order {
     private BigDecimal orderPrice;
     private LocalDateTime createdAt;
 
+    private Address address;
+    private PaymentDetails paymentDetails;
+    private String paymentMethod;
+    private OrderStatus overallStatus = OrderStatus.PENDING;
+
     public Order() {
         this.createdAt = LocalDateTime.now();
     }

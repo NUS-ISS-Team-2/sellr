@@ -11,6 +11,8 @@ import CartPage from "./pages/CartPage";
 import { CartProvider } from "./context/CartContext";
 import OrderCreatedPage from "./pages/OrderCreatedPage";
 import OrdersPage from "./pages/OrdersPage";
+import CheckoutPage from "./pages/CheckoutPage";
+import ProductManagementPage from "./pages/ProductManagementPage";
 
 export default function App() {
   return (
@@ -18,6 +20,7 @@ export default function App() {
       <CartProvider>
       <Router basename="/app">
         <Routes>
+          <Route path="/product-management" element={<ProductManagementPage />} />
           <Route path="/" element={<MainPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
@@ -26,6 +29,7 @@ export default function App() {
           <Route path="/products/:id" element={<ProductDetailPage />} />
           <Route path="/orderCreated" element={<OrderCreatedPage/>} />
           <Route path="/myorders" element={<OrdersPage/>} />
+          <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Router>

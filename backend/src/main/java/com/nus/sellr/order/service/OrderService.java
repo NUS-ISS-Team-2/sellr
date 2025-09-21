@@ -9,9 +9,11 @@ import com.nus.sellr.order.entity.OrderItem;
 import com.nus.sellr.order.entity.OrderStatus;
 import com.nus.sellr.order.repository.OrderRepository;
 import com.nus.sellr.product.dto.ProductResponse;
+import com.nus.sellr.product.entity.Product;
 import com.nus.sellr.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import com.nus.sellr.order.entity.PaymentDetails;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -25,6 +27,59 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final CartService cartService;
     private final ProductService productService;
+
+    public OrderResponseDTO checkout(CheckoutRequestDTO request) {
+        // Payment verification
+        if ("Credit Card".equals(request.getPaymentMethod())) {
+            PaymentDetails pd = request.getPaymentDetails();
+            if (pd.getCardNumber() == null || pd.getCardName() == null
+                || pd.getExpiry() == null || pd.getCvv() == null) {
+                throw new RuntimeException("Invalid credit card details");
+            }
+        } else if ("PayPal".equals(request.getPaymentMethod())) {
+            if (request.getPaymentDetails().getPaypalEmail() == null) {
+                throw new RuntimeException("Invalid PayPal email");
+            }
+        } else if ("Bank Transfer".equals(request.getPaymentMethod())) {
+            PaymentDetails pd = request.getPaymentDetails();
+            if (pd.getBankName() == null || pd.getAccountNumber() == null
+                || pd.getAccountHolder() == null) {
+                throw new RuntimeException("Invalid bank transfer details");
+            }
+        }
+
+        Order order = new Order(request.getUserId());
+        order.setItems(request.getItems().stream()
+            .map(dto -> {
+                OrderItem item = new OrderItem();
+                item.setProductId(dto.getProductId());
+                item.setQuantity(dto.getQuantity());
+                item.setShippingFee(dto.getShippingFee());
+                item.setStatus(OrderStatus.PENDING);
+                item.setImageUrl(dto.getImageUrl());
+                return item;
+            }).collect(Collectors.toList())
+        );
+        order.setOrderPrice(BigDecimal.valueOf(request.getSubtotal()));
+        order.setAddress(request.getAddress());
+        order.setPaymentMethod(request.getPaymentMethod());
+        order.setPaymentDetails(request.getPaymentDetails());
+        order.setOverallStatus(OrderStatus.PENDING);
+        order.setCreatedAt(LocalDateTime.now());
+
+        Order savedOrder = orderRepository.save(order);
+
+        for (OrderItem item : savedOrder.getItems()) {
+            Product product = productService.getProductEntityById(item.getProductId());
+            int updatedStock = product.getStock() - item.getQuantity();
+            product.setStock(Math.max(0, updatedStock));  // prevent negative stock
+            productService.saveProduct(product);
+        }
+
+        cartService.clearCart(request.getUserId());
+
+        return toResponseDTO(savedOrder);
+    }
 
     public OrderResponseDTO createOrder(CreateOrderDTO createOrderDTO) {
         Order order = new Order(createOrderDTO.getUserId());
@@ -97,6 +152,10 @@ public class OrderService {
         dto.setUserId(order.getUserId());
         dto.setOrderPrice(order.getOrderPrice());
         dto.setCreatedAt(order.getCreatedAt());
+        dto.setOverallStatus(order.getOverallStatus());
+        dto.setAddress(order.getAddress());
+        dto.setPaymentMethod(order.getPaymentMethod());
+        dto.setPaymentDetails(order.getPaymentDetails());
 
         List<OrderItemDTO> itemDTOs = order.getItems().stream()
                 .map(this::toOrderItemDTO)
@@ -145,6 +204,13 @@ public class OrderService {
 
         Order savedOrder = orderRepository.save(order);
 
+        for (OrderItem item : savedOrder.getItems()) {
+            Product product = productService.getProductEntityById(item.getProductId());
+            int updatedStock = product.getStock() - item.getQuantity();
+            product.setStock(Math.max(0, updatedStock));
+            productService.saveProduct(product);
+        }
+
         cartService.clearCart(userId);
 
         return toResponseDTO(savedOrder);
@@ -163,4 +229,5 @@ public class OrderService {
         ProductResponse product = productService.getProductById(item.getProductId());
         return BigDecimal.valueOf(product.getPrice());
     }
+
 }

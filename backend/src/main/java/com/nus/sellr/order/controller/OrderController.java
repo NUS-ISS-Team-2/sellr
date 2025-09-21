@@ -50,9 +50,15 @@ public class OrderController {
         return ResponseEntity.noContent().build();
     }
 
+    // @PostMapping("/checkout")
+    // public ResponseEntity<OrderResponseDTO> checkout(@RequestBody CheckoutRequestDTO checkoutRequestDTO) {
+    //     OrderResponseDTO orderResponseDTO = orderService.checkout(checkoutRequestDTO.getUserId());
+    //     return ResponseEntity.ok(orderResponseDTO);
+    // }
+
     @PostMapping("/checkout")
     public ResponseEntity<OrderResponseDTO> checkout(@RequestBody CheckoutRequestDTO checkoutRequestDTO) {
-        OrderResponseDTO orderResponseDTO = orderService.checkout(checkoutRequestDTO.getUserId());
+        OrderResponseDTO orderResponseDTO = orderService.checkout(checkoutRequestDTO);
         return ResponseEntity.ok(orderResponseDTO);
     }
 }

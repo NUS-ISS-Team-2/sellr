@@ -60,15 +60,6 @@ export default function MainPage() {
       {(role === "SELLER" || role === "ADMIN") && (
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-2xl font-bold">Your Products</h3>
-          <button
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-            onClick={() => {
-              setEditingProduct(null);
-              setShowForm(true);
-            }}
-          >
-            List New Product
-          </button>
         </div>
       )}
 
