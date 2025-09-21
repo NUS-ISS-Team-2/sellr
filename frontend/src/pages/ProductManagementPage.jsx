@@ -1,5 +1,4 @@
-import React, { useEffect, useState, useContext } from "react";
-import { UserContext } from "../context/UserContext";
+import { useEffect, useState } from "react";
 import Header from "../components/Header";
 import ProductForm from "../components/ProductForm";
 import ConfirmDeleteModal from "../components/ConfirmDeleteModal";
