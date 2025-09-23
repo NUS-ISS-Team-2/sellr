@@ -14,6 +14,7 @@ import OrdersPage from "./pages/OrdersPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import ProductManagementPage from "./pages/ProductManagementPage";
 import OrderManagementPage from "./pages/OrderManagementPage";
+import WishlistPage from "./pages/WishlistPage";
 
 export default function App() {
   return (
@@ -32,6 +33,7 @@ export default function App() {
           <Route path="/myorders" element={<OrdersPage/>} />
           <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/manageorders" element={<OrderManagementPage />} />
+          <Route path="/wishlist" element={<WishlistPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Router>
