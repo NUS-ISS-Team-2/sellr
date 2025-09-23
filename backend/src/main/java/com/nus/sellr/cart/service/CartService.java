@@ -96,26 +96,6 @@ public class CartService {
         return convertToDTO(cart);
     }
 
-    // -----------------------
-    // Helper: Convert Cart -> CartDTO
-    // private CartDTO convertToDTO(Cart cart) {
-    //     List<CartItemDTO> items = cart.getItems().stream().map(item -> {
-    //         Product product = productRepository.findById(item.getProductId())
-    //                 .orElseThrow(() -> new RuntimeException("Product not found"));
-
-    //         return new CartItemDTO(
-    //                 product.getId(),
-    //                 product.getName(),
-    //                 product.getImageUrl(),
-    //                 product.getPrice(),
-    //                 item.getQuantity()
-    //         );
-    //     }).collect(Collectors.toList());
-
-    //     return new CartDTO(cart.getUserId(), items);
-    // }
-
-    // ...existing code...
     private CartDTO convertToDTO(Cart cart) {
         List<CartItemDTO> itemDTOs = cart.getItems().stream()
             .map(item -> {
@@ -127,7 +107,7 @@ public class CartService {
                         product.getName(),
                         product.getImageUrl(),
                         product.getPrice(),
-                        item.getQuantity()
+                        item.getQuantity(), product.getSellerId()
                     );
                 } else {
                     // Optionally log missing product

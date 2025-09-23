@@ -1,6 +1,5 @@
 package com.nus.sellr.order.service;
 
-import com.nus.sellr.cart.dto.CartDTO;
 import com.nus.sellr.cart.dto.CartItemDTO;
 import com.nus.sellr.cart.service.CartService;
 import com.nus.sellr.order.dto.*;
@@ -57,6 +56,7 @@ public class OrderService {
                 item.setShippingFee(dto.getShippingFee());
                 item.setStatus(OrderStatus.PENDING);
                 item.setImageUrl(dto.getImageUrl());
+                item.setSellerId((dto.getSellerId()));
                 return item;
             }).collect(Collectors.toList())
         );
@@ -86,7 +86,8 @@ public class OrderService {
 
         // Convert DTO items to entities (only store productId, quantity, shippingFee)
         List<OrderItem> items = createOrderDTO.getItems().stream()
-                .map(dto -> new OrderItem(dto.getProductId(), dto.getQuantity(), dto.getShippingFee(), null))
+                .map(dto -> new OrderItem(dto.getProductId(), dto.getQuantity(),
+                        dto.getShippingFee(), null, null))
                 .collect(Collectors.toList());
 
         order.setItems(items);
@@ -144,8 +145,6 @@ public class OrderService {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
-    // ----------------------
-    // Convert Order -> OrderResponseDTO
     private OrderResponseDTO toResponseDTO(Order order) {
         OrderResponseDTO dto = new OrderResponseDTO();
         dto.setOrderId(order.getId());
@@ -179,41 +178,8 @@ public class OrderService {
         dto.setDeliveryDate(item.getDeliveryDate());
         dto.setRating(item.getRating());
         dto.setReview(item.getReview());
-
+        dto.setSellerId(item.getSellerId());
         return dto;
-    }
-
-    public OrderResponseDTO checkout(String userId) {
-        CartDTO cart = cartService.getCartByUserId(userId);
-        if (cart.getItems().isEmpty()) {
-            throw new RuntimeException("Cart is empty");
-        }
-
-        List<OrderItem> orderItems = cart.getItems().stream()
-                .map(this::createOrderItemFromCartItem)
-                .collect(Collectors.toList());
-
-        BigDecimal totalPrice = orderItems.stream()
-                .map(this::getProductPriceFromItem)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        Order order = new Order(userId);
-        order.setItems(orderItems);
-        order.setOrderPrice(totalPrice);
-        order.setCreatedAt(LocalDateTime.now());
-
-        Order savedOrder = orderRepository.save(order);
-
-        for (OrderItem item : savedOrder.getItems()) {
-            Product product = productService.getProductEntityById(item.getProductId());
-            int updatedStock = product.getStock() - item.getQuantity();
-            product.setStock(Math.max(0, updatedStock));
-            productService.saveProduct(product);
-        }
-
-        cartService.clearCart(userId);
-
-        return toResponseDTO(savedOrder);
     }
 
     private OrderItem createOrderItemFromCartItem(CartItemDTO cartItem) {
@@ -222,6 +188,7 @@ public class OrderService {
         orderItem.setQuantity(cartItem.getQuantity());
         orderItem.setShippingFee(BigDecimal.valueOf(0));
         orderItem.setStatus(OrderStatus.PENDING);
+        orderItem.setSellerId(cartItem.getSellerId());
         return orderItem;
     }
 
@@ -229,5 +196,50 @@ public class OrderService {
         ProductResponse product = productService.getProductById(item.getProductId());
         return BigDecimal.valueOf(product.getPrice());
     }
+
+    // Fetch all orders for a seller, only including their items
+    public List<OrderResponseDTO> getOrdersForSeller(String sellerId) {
+
+        List<Order> orders = orderRepository.findOrdersBySellerId(sellerId);
+        System.out.println("Orders found: " + orders.size());
+        orders.forEach(System.out::println);
+
+        return orders.stream()
+                .map(order -> {
+                    List<OrderItem> sellerItems = order.getItems().stream()
+                            .filter(item -> sellerId.equals(item.getSellerId()))
+                            .collect(Collectors.toList());
+
+                    if (sellerItems.isEmpty()) {
+                        return null; // safety check
+                    }
+                    order.setItems(sellerItems); // only keep seller's items
+                    return toResponseDTO(order);
+                })
+                .filter(dto -> dto != null)
+                .collect(Collectors.toList());
+    }
+
+    public void updateOrderItemStatusAsSeller(String orderId, String productId, String sellerId, OrderStatus status) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        // Only update if the item belongs to the seller
+        order.getItems().stream()
+                .filter(item -> productId.equals(item.getProductId()) && sellerId.equals(item.getSellerId()))
+                .findFirst()
+                .ifPresent(item -> item.setStatus(status));
+
+        // Check if all items are now shipped
+        boolean allShipped = order.getItems().stream()
+                .allMatch(item -> item.getStatus() == OrderStatus.SHIPPED);
+
+        if (allShipped) {
+            order.setOverallStatus(OrderStatus.SHIPPED);
+        }
+
+        orderRepository.save(order);
+    }
+
 
 }
