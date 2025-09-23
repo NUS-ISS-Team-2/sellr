@@ -1,6 +1,5 @@
 package com.nus.sellr.order.service;
 
-import com.nus.sellr.cart.dto.CartDTO;
 import com.nus.sellr.cart.dto.CartItemDTO;
 import com.nus.sellr.cart.service.CartService;
 import com.nus.sellr.order.dto.*;
@@ -211,7 +210,9 @@ public class OrderService {
                             .filter(item -> sellerId.equals(item.getSellerId()))
                             .collect(Collectors.toList());
 
-                    if (sellerItems.isEmpty()) return null; // safety check
+                    if (sellerItems.isEmpty()) {
+                        return null; // safety check
+                    }
                     order.setItems(sellerItems); // only keep seller's items
                     return toResponseDTO(order);
                 })

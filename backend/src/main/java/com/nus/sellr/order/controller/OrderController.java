@@ -1,7 +1,6 @@
 package com.nus.sellr.order.controller;
 
 import com.nus.sellr.order.dto.*;
-import com.nus.sellr.order.entity.OrderStatus;
 import com.nus.sellr.order.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
