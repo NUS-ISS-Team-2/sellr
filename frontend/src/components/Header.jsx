@@ -45,7 +45,7 @@ export default function Header() {
 
   const handleMyWishlist = () => {
       navigate("/wishlist");
-      setIsOpen(false);
+      setOpenDropdown(null);
   };  
 
   return (

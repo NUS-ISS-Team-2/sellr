@@ -219,7 +219,6 @@ public class OrderService {
                 .collect(Collectors.toList());
     }
 
-    // Update status of an order item as a seller
     public void updateOrderItemStatusAsSeller(String orderId, String productId, String sellerId, OrderStatus status) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
@@ -230,7 +229,16 @@ public class OrderService {
                 .findFirst()
                 .ifPresent(item -> item.setStatus(status));
 
+        // Check if all items are now shipped
+        boolean allShipped = order.getItems().stream()
+                .allMatch(item -> item.getStatus() == OrderStatus.SHIPPED);
+
+        if (allShipped) {
+            order.setOverallStatus(OrderStatus.SHIPPED);
+        }
+
         orderRepository.save(order);
     }
+
 
 }
