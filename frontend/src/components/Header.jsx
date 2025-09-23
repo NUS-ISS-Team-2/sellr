@@ -21,6 +21,11 @@ export default function Header() {
     setIsOpen(false);
   };
 
+  const handleMyWishlist = () => {
+      navigate("/wishlist");
+      setIsOpen(false);
+  };  
+
   return (
     <header className="bg-blue-600 text-white">
       <div className="container mx-auto flex items-center justify-between px-6 py-4">
@@ -54,6 +59,12 @@ export default function Header() {
                       className="w-full text-left px-4 py-2 hover:bg-gray-200"
                     >
                       View Orders
+                    </button>
+                    <button
+                      onClick={handleMyWishlist}
+                      className="w-full text-left px-4 py-2 hover:bg-gray-200"
+                    >
+                      My Wishlist
                     </button>
                     <button
                       onClick={handleLogout}

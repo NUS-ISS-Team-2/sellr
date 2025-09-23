@@ -5,6 +5,7 @@ import Header from "../components/Header";
 import { UserContext } from "../context/UserContext";
 import { useCart } from "../context/CartContext";
 import { getProductById, getRelatedProducts } from "../services/productService";
+import { addToWishlist } from "../services/wishlistService";
 
 const PLACEHOLDER_IMG =
   "data:image/svg+xml;utf8," +
@@ -26,6 +27,16 @@ export default function ProductDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [related, setRelated] = useState([]);
+
+  async function handleAddToWishlist() {
+    try {
+      await addToWishlist(userId, product.id);
+      alert("Added to wishlist!");
+    } catch (e) {
+      console.error(e);
+      alert("Item already in wishlist.");
+    }
+  }
 
   useEffect(() => {
     let ignore = false;
@@ -148,41 +159,65 @@ export default function ProductDetailPage() {
 
 
                 {/* Cart Controls */}
-                <div className="mt-5 flex items-center gap-2">
-                  {quantity === 0 ? (
+                <div className="mt-5 flex flex-col gap-2">
+                {quantity === 0 ? (
+                  <button
+                    onClick={() => addToCart(userId, product)}
+                    disabled={!inStock}
+                    className={`w-full py-2 rounded text-white ${
+                      inStock ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-400 cursor-not-allowed"
+                    }`}
+                  >
+                    Add to Cart
+                  </button>
+                ) : (
+                  <div className="flex items-center justify-start gap-2">
                     <button
-                      onClick={() => addToCart(userId, product)}
-                      disabled={!inStock}
-                      className={`w-full py-2 rounded text-white ${inStock ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-400 cursor-not-allowed"
-                        }`}
+                      onClick={() => updateCart(userId, product.id, 1)}
+                      disabled={!inStock || quantity >= product.stock}
+                      className={`px-2 py-1 rounded text-white ${
+                        inStock && quantity < product.stock
+                          ? "bg-green-500 hover:bg-green-600"
+                          : "bg-gray-400 cursor-not-allowed"
+                      }`}
                     >
-                      Add to Cart
+                      +
                     </button>
-                  ) : (
-                    <div className="flex items-center space-x-2">
-                      
-                      <button
-                        onClick={() => updateCart(userId, product.id, 1)}
-                        disabled={!inStock || quantity >= product.stock}
-                        className={`px-2 py-1 rounded text-white ${inStock && quantity < product.stock
-                            ? "bg-green-500 hover:bg-green-600"
-                            : "bg-gray-400 cursor-not-allowed"
-                          }`}
-                      >
-                        +
-                      </button>
-                      <span>{quantity}</span>
-                      <button
-                        onClick={() => updateCart(userId, product.id, -1)}
-                        disabled={quantity <= 0}
-                        className={`px-2 py-1 rounded text-white ${quantity > 0 ? "bg-red-500 hover:bg-red-600" : "bg-gray-400 cursor-not-allowed"
-                          }`}
-                      >
-                        -
-                      </button>
-                    </div>
-                  )}
-                </div>
+                    <span>{quantity}</span>
+                    <button
+                      onClick={() => updateCart(userId, product.id, -1)}
+                      disabled={quantity <= 0}
+                      className={`px-2 py-1 rounded text-white ${
+                        quantity > 0 ? "bg-red-500 hover:bg-red-600" : "bg-gray-400 cursor-not-allowed"
+                      }`}
+                    >
+                      -
+                    </button>
+                  </div>
+                )}
+                <button
+                  type="button"
+                  className="w-full inline-flex items-center justify-center gap-2 rounded-lg border border-rose-300 bg-white py-2 font-medium text-rose-600 hover:bg-rose-50 transition"
+                  onClick={handleAddToWishlist}
+                  aria-label="Add to wishlist"
+                >
+                  <svg
+                    className="h-5 w-5"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M20.205 4.792a5.5 5.5 0 00-7.778 0L12 5.219l-.427-.427a5.5 5.5 0 10-7.778 7.778l.427.427L12 21.675l7.778-8.678.427-.427a5.5 5.5 0 000-7.778z"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  Add to Wishlist
+                </button>
+              </div>
 
                 {/* Related Links */}
                 <div className="mt-4 flex gap-2">
