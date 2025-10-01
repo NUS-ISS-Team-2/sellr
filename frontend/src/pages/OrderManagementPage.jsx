@@ -7,6 +7,7 @@ export default function OrderManagementPage() {
   const [orders, setOrders] = useState([]);
   const [viewOrder, setViewOrder] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [deliveryDates, setDeliveryDates] = useState({}); // store delivery dates keyed by productId
 
   const API_URL = "http://localhost:8080/api/orders";
   const { userId } = useContext(UserContext);
@@ -30,14 +31,14 @@ export default function OrderManagementPage() {
     }
   };
 
-  const handleMarkAsShipped = async (orderId, productId) => {
+  const handleMarkAsShipped = async (orderId, productId, deliveryDate) => {
     try {
       await axios.put(`${API_URL}/seller/status`, {
         orderId,
         productId,
         sellerId: userId,
         status: "SHIPPED",
-        deliveryDate: new Date().toISOString(),
+        deliveryDate: new Date(deliveryDate).toISOString(),
       });
 
       // Fetch updated order from backend
@@ -58,6 +59,16 @@ export default function OrderManagementPage() {
     } catch (err) {
       console.error("Failed to update order item status:", err);
     }
+  };
+
+  const handleDateChange = (productId, date) => {
+    setDeliveryDates((prev) => ({ ...prev, [productId]: date }));
+  };
+
+  const getDefaultDeliveryDate = () => {
+    const date = new Date();
+    date.setDate(date.getDate() + 3);
+    return date.toISOString().split("T")[0]; // YYYY-MM-DD
   };
 
   return (
@@ -113,9 +124,7 @@ export default function OrderManagementPage() {
                   ))
                 )}
               </tbody>
-
             </table>
-
           </div>
         </div>
 
@@ -131,35 +140,58 @@ export default function OrderManagementPage() {
 
               <h3 className="mt-4 font-semibold">Items:</h3>
               <ul className="space-y-3">
-                {viewOrder.items.map((item) => (
-                  <li
-                    key={item.productId}
-                    className="border p-3 rounded flex items-center justify-between"
-                  >
-                    <div className="flex items-center space-x-3">
-                      <img
-                        src={item.imageUrl || "/placeholder.png"}
-                        alt={item.productName}
-                        className="w-16 h-16 object-cover rounded-md border border-gray-200"
-                      />
-                      <div>
-                        <p className="font-medium">{item.productName}</p>
-                        <p>Qty: {item.quantity}</p>
-                        <p>Status: {item.status}</p>
-                        {item.review && <p>Review: {item.review}</p>}
-                      </div>
-                    </div>
+                {viewOrder.items.map((item) => {
+                  const defaultDate = deliveryDates[item.productId] || getDefaultDeliveryDate();
 
-                    {item.status === "PENDING" && (
-                      <button
-                        onClick={() => handleMarkAsShipped(viewOrder.orderId, item.productId)}
-                        className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600"
-                      >
-                        Mark as Shipped
-                      </button>
-                    )}
-                  </li>
-                ))}
+                  return (
+                    <li
+                      key={item.productId}
+                      className="border p-3 rounded flex flex-col sm:flex-row sm:items-center justify-between space-y-2 sm:space-y-0 sm:space-x-2"
+                    >
+                      <div className="flex items-center space-x-3">
+                        <img
+                          src={item.imageUrl || "/placeholder.png"}
+                          alt={item.productName}
+                          className="w-16 h-16 object-cover rounded-md border border-gray-200"
+                        />
+                        <div>
+                          <p className="font-medium">{item.productName}</p>
+                          <p>Qty: {item.quantity}</p>
+                          <p>Status: {item.status}</p>
+                          <p>
+                            Estimated Delivery: {new Date(item.deliveryDate).toLocaleString(undefined, {
+                              year: "numeric",
+                              month: "short",
+                              day: "numeric",
+                              hour: "numeric",
+                              minute: "2-digit",
+                            })}
+                          </p>                        </div>
+                      </div>
+
+                      {item.status === "PENDING" && (
+                        <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
+                          <input
+                            type="date"
+                            value={defaultDate}
+                            onChange={(e) => handleDateChange(item.productId, e.target.value)}
+                            className="border rounded px-2 py-1"
+                          />
+                          <button
+                            onClick={() =>
+                              handleMarkAsShipped(viewOrder.orderId, item.productId, defaultDate)
+                            }
+                            disabled={!defaultDate}
+                            className={`px-3 py-1 rounded text-white ${defaultDate ? "bg-green-500 hover:bg-green-600" : "bg-gray-400 cursor-not-allowed"
+                              }`}
+                          >
+                            Mark as Shipped
+                          </button>
+                        </div>
+                      )}
+                    </li>
+                  );
+                })}
               </ul>
 
               <button
