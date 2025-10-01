@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import com.nus.sellr.order.entity.PaymentDetails;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -220,7 +221,8 @@ public class OrderService {
                 .collect(Collectors.toList());
     }
 
-    public void updateOrderItemStatusAsSeller(String orderId, String productId, String sellerId, OrderStatus status) {
+    public void updateOrderItemStatusAsSeller(String orderId, String productId, String sellerId, OrderStatus status,
+                                              LocalDateTime deliveryDate) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
 
@@ -228,7 +230,10 @@ public class OrderService {
         order.getItems().stream()
                 .filter(item -> productId.equals(item.getProductId()) && sellerId.equals(item.getSellerId()))
                 .findFirst()
-                .ifPresent(item -> item.setStatus(status));
+                .ifPresent(item -> {
+                    item.setStatus(status);
+                    item.setDeliveryDate(deliveryDate); // update delivery date
+                });
 
         // Check if all items are now shipped
         boolean allShipped = order.getItems().stream()

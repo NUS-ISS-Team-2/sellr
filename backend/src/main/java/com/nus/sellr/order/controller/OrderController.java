@@ -74,7 +74,8 @@ public class OrderController {
                 request.getOrderId(),
                 request.getProductId(),
                 request.getSellerId(),
-                request.getStatus()
+                request.getStatus(),
+                request.getDeliveryDate()
         );
     }
 }

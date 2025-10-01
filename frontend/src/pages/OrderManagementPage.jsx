@@ -37,6 +37,7 @@ export default function OrderManagementPage() {
         productId,
         sellerId: userId,
         status: "SHIPPED",
+        deliveryDate: new Date().toISOString(),
       });
 
       // Fetch updated order from backend
