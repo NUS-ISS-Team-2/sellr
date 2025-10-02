@@ -1,6 +1,5 @@
 package com.nus.sellr.order.service;
 
-import com.nus.sellr.cart.dto.CartItemDTO;
 import com.nus.sellr.cart.service.CartService;
 import com.nus.sellr.order.dto.*;
 import com.nus.sellr.order.entity.Order;
