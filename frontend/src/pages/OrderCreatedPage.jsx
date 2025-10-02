@@ -10,12 +10,13 @@ export default function OrderCreatedPage() {
   const location = useLocation();
   const orderId = location.state?.orderId;
 
+  const API_URL = "http://localhost:8080/api/orders";
+
+  // Fetch order details
   useEffect(() => {
     async function fetchOrder() {
       try {
-        const res = await axios.get(
-          `http://localhost:8080/api/orders/${orderId}`
-        );
+        const res = await axios.get(`${API_URL}/${orderId}`);
         setOrder(res.data);
       } catch (error) {
         console.error("Error fetching order:", error);
@@ -23,9 +24,26 @@ export default function OrderCreatedPage() {
         setLoading(false);
       }
     }
-
     fetchOrder();
   }, [orderId]);
+
+  // Handler for buyer marking item as delivered
+  const handleMarkAsDelivered = async (productId) => {
+    try {
+      await axios.put(`${API_URL}/buyer/status`, {
+        orderId,
+        productId,
+        status: "DELIVERED",
+      });
+
+      // Re-fetch updated order
+      const res = await axios.get(`${API_URL}/${orderId}`);
+      setOrder(res.data);
+    } catch (error) {
+      console.error("Error marking as delivered:", error);
+      alert("Failed to mark item as delivered. Please try again.");
+    }
+  };
 
   if (loading)
     return (
@@ -73,12 +91,49 @@ export default function OrderCreatedPage() {
               <div className="ml-4 flex-1">
                 <h4 className="font-semibold">{item.name}</h4>
                 <p>Quantity: {item.quantity}</p>
+
+                {/* Status with color */}
                 <p>
-                  Status:
-                  <span className="ml-2 font-medium text-yellow-600">
+                  Status:{" "}
+                  <span
+                    className={`ml-2 font-medium ${item.status === "PENDING"
+                      ? "text-red-600"
+                      : item.status === "SHIPPED"
+                        ? "text-yellow-600"
+                        : "text-green-600"
+                      }`}
+                  >
                     {item.status}
                   </span>
                 </p>
+                <p>
+                  {item.status === "SHIPPED" && (
+                    <>Estimated Delivery Date: {new Date(item.deliveryDate).toLocaleDateString("en-GB", {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                    })}</>
+                  )}
+                  {item.status === "DELIVERED" && (
+                    <>Delivered On: {new Date(item.deliveryDate).toLocaleDateString("en-GB", {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                    })}</>
+                  )}
+                </p>
+
+
+
+                {/* Buyer action: Mark as Delivered */}
+                {item.status === "SHIPPED" && (
+                  <button
+                    onClick={() => handleMarkAsDelivered(item.productId)}
+                    className="mt-2 bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700"
+                  >
+                    Mark as Delivered
+                  </button>
+                )}
               </div>
             </div>
           ))}

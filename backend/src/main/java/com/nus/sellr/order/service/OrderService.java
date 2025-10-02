@@ -1,6 +1,5 @@
 package com.nus.sellr.order.service;
 
-import com.nus.sellr.cart.dto.CartItemDTO;
 import com.nus.sellr.cart.service.CartService;
 import com.nus.sellr.order.dto.*;
 import com.nus.sellr.order.entity.Order;
@@ -105,24 +104,51 @@ public class OrderService {
 
     public List<OrderResponseDTO> getOrdersByUserId(String userId) {
         return orderRepository.findByUserId(userId).stream()
-                .map(this::toResponseDTO)
+                .map(order -> {
+                    // Count items by status
+                    long pendingCount = order.getItems().stream()
+                            .filter(item -> item.getStatus() == OrderStatus.PENDING)
+                            .count();
+
+                    long shippedCount = order.getItems().stream()
+                            .filter(item -> item.getStatus() == OrderStatus.SHIPPED)
+                            .count();
+
+                    long deliveredCount = order.getItems().stream()
+                            .filter(item -> item.getStatus() == OrderStatus.DELIVERED)
+                            .count();
+
+                    // If all items are delivered, mark overall status as COMPLETED
+                    if (pendingCount == 0 && shippedCount == 0 && deliveredCount > 0) {
+                        order.setOverallStatus(OrderStatus.COMPLETED);
+                        orderRepository.save(order);
+                    } else {
+                        order.setOverallStatus(OrderStatus.INCOMPLETE);
+                    }
+
+                    // You can also store counts in the DTO if needed
+                    OrderResponseDTO dto = toResponseDTO(order);
+
+                    return dto;
+                })
                 .collect(Collectors.toList());
     }
 
-    public void updateOrderItemStatus(UpdateOrderItemStatusDTO updateDTO) {
-        Order order = orderRepository.findById(updateDTO.getOrderId())
-                .orElseThrow(() -> new RuntimeException("Order not found"));
 
-        order.getItems().stream()
-                .filter(i -> i.getProductId().equals(updateDTO.getProductId()))
-                .findFirst()
-                .ifPresent(item -> {
-                    item.setStatus(updateDTO.getStatus());
-                    item.setDeliveryDate(updateDTO.getDeliveryDate());
-                });
-
-        orderRepository.save(order);
-    }
+//    public void updateOrderItemStatus(UpdateOrderItemStatusDTO updateDTO) {
+//        Order order = orderRepository.findById(updateDTO.getOrderId())
+//                .orElseThrow(() -> new RuntimeException("Order not found"));
+//
+//        order.getItems().stream()
+//                .filter(i -> i.getProductId().equals(updateDTO.getProductId()))
+//                .findFirst()
+//                .ifPresent(item -> {
+//                    item.setStatus(updateDTO.getStatus());
+//                    item.setDeliveryDate(updateDTO.getDeliveryDate());
+//                });
+//
+//        orderRepository.save(order);
+//    }
 
     public void addReviewToOrderItem(AddReviewDTO reviewDTO) {
         Order order = orderRepository.findById(reviewDTO.getOrderId())
@@ -182,20 +208,20 @@ public class OrderService {
         return dto;
     }
 
-    private OrderItem createOrderItemFromCartItem(CartItemDTO cartItem) {
-        OrderItem orderItem = new OrderItem();
-        orderItem.setProductId(cartItem.getProductId());
-        orderItem.setQuantity(cartItem.getQuantity());
-        orderItem.setShippingFee(BigDecimal.valueOf(0));
-        orderItem.setStatus(OrderStatus.PENDING);
-        orderItem.setSellerId(cartItem.getSellerId());
-        return orderItem;
-    }
-
-    private BigDecimal getProductPriceFromItem(OrderItem item) {
-        ProductResponse product = productService.getProductById(item.getProductId());
-        return BigDecimal.valueOf(product.getPrice());
-    }
+//    private OrderItem createOrderItemFromCartItem(CartItemDTO cartItem) {
+//        OrderItem orderItem = new OrderItem();
+//        orderItem.setProductId(cartItem.getProductId());
+//        orderItem.setQuantity(cartItem.getQuantity());
+//        orderItem.setShippingFee(BigDecimal.valueOf(0));
+//        orderItem.setStatus(OrderStatus.PENDING);
+//        orderItem.setSellerId(cartItem.getSellerId());
+//        return orderItem;
+//    }
+//
+//    private BigDecimal getProductPriceFromItem(OrderItem item) {
+//        ProductResponse product = productService.getProductById(item.getProductId());
+//        return BigDecimal.valueOf(product.getPrice());
+//    }
 
     // Fetch all orders for a seller, only including their items
     public List<OrderResponseDTO> getOrdersForSeller(String sellerId) {
@@ -220,7 +246,8 @@ public class OrderService {
                 .collect(Collectors.toList());
     }
 
-    public void updateOrderItemStatusAsSeller(String orderId, String productId, String sellerId, OrderStatus status) {
+    public void updateOrderItemStatusAsSeller(String orderId, String productId, String sellerId, OrderStatus status,
+                                              LocalDateTime deliveryDate) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
 
@@ -228,7 +255,10 @@ public class OrderService {
         order.getItems().stream()
                 .filter(item -> productId.equals(item.getProductId()) && sellerId.equals(item.getSellerId()))
                 .findFirst()
-                .ifPresent(item -> item.setStatus(status));
+                .ifPresent(item -> {
+                    item.setStatus(status);
+                    item.setDeliveryDate(deliveryDate); // update delivery date
+                });
 
         // Check if all items are now shipped
         boolean allShipped = order.getItems().stream()
@@ -240,6 +270,36 @@ public class OrderService {
 
         orderRepository.save(order);
     }
+
+    public void updateOrderItemStatusAsBuyer(String orderId, String productId, OrderStatus status) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        // Find the item
+        order.getItems().stream()
+                .filter(item -> productId.equals(item.getProductId()))
+                .findFirst()
+                .ifPresent(item -> {
+                    // Only allow DELIVERED if current status is SHIPPED
+                    if (item.getStatus() != OrderStatus.SHIPPED) {
+                        throw new RuntimeException("Item must be shipped before it can be delivered.");
+                    }
+
+                    item.setStatus(status);
+                    item.setDeliveryDate(LocalDateTime.now());
+                });
+
+        // If all items are now DELIVERED, update overall order status
+        boolean allDelivered = order.getItems().stream()
+                .allMatch(item -> item.getStatus() == OrderStatus.DELIVERED);
+
+        if (allDelivered) {
+            order.setOverallStatus(OrderStatus.DELIVERED);
+        }
+
+        orderRepository.save(order);
+    }
+
 
 
 }

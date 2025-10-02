@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import Header from "../components/Header";
 import ProductForm from "../components/ProductForm";
 import ConfirmDeleteModal from "../components/ConfirmDeleteModal";
+import { UserContext } from "../context/UserContext";
 
 export default function ProductManagementPage() {
   const [products, setProducts] = useState([]);
@@ -12,24 +13,35 @@ export default function ProductManagementPage() {
   const [viewProduct, setViewProduct] = useState(null);
 
   const API_URL = "http://localhost:8080/api/products";
+  const { userId, role } = useContext(UserContext);
 
-  // Fetch products
   useEffect(() => {
-    fetchProducts();
-  }, []);
+    const fetchProducts = async () => {
+      if (!role) return; // wait until role is available
 
-  const fetchProducts = async () => {
-    try {
-      setLoading(true);
-      const res = await fetch(API_URL);
-      const data = await res.json();
-      setProducts(data);
-    } catch (err) {
-      console.error("Failed to fetch products:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+      try {
+        setLoading(true);
+
+        let url = `${API_URL}`;
+        if (role === "SELLER" && userId) {
+          url += `/my-products?sellerId=${userId}`;
+        }
+
+        const res = await fetch(url);
+        if (!res.ok) throw new Error("Failed to fetch products");
+
+        const data = await res.json();
+        setProducts(data);
+      } catch (err) {
+        console.error("Failed to fetch products:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, [role, userId]);
+
 
   const handleProductAdded = (newProduct) => {
     setProducts((prev) => {

@@ -4,15 +4,20 @@ import { Link } from "react-router-dom";
 export default function ProductSlider({ products, scrollSpeed = 1 }) {
   const sliderRef = useRef(null);
 
-  // Truncate helper
+  // Helper to truncate text
   const truncate = (text, maxLength) => {
     if (!text) return "";
     return text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
   };
 
+  // Duplicate products for seamless scrolling if more than 1
+  const loopProducts = products.length >= 4 ? [...products, ...products] : products;
+
   useEffect(() => {
     const slider = sliderRef.current;
-    if (!slider) return;
+
+    // Only start auto-scroll if there are 4 or more products
+    if (!slider || products.length < 4) return;
 
     const interval = setInterval(() => {
       slider.scrollLeft += scrollSpeed;
@@ -24,10 +29,7 @@ export default function ProductSlider({ products, scrollSpeed = 1 }) {
     }, 20);
 
     return () => clearInterval(interval);
-  }, [scrollSpeed]);
-
-  // Duplicate products array for seamless looping
-  const loopProducts = [...products, ...products];
+  }, [scrollSpeed, products.length]);
 
   return (
     <div className="w-full">
@@ -44,7 +46,7 @@ export default function ProductSlider({ products, scrollSpeed = 1 }) {
             to={`/products/${product.id}`}
             className="shrink-0 min-w-[250px] bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition block no-underline text-inherit focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
             title={product.name}
-            >
+          >
             <img
               src={product.imageUrl}
               alt={product.name}
