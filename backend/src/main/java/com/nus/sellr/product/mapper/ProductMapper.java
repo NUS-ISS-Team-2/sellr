@@ -22,6 +22,8 @@ public class ProductMapper {
         dto.setImageUrl(product.getImageUrl());
         dto.setCategory(product.getCategory());
         dto.setStock(product.getStock());
+        dto.setSellerId(product.getSellerId());
+        dto.setLowStock(product.getStock() < 20);
         return dto;
     }
 
@@ -39,6 +41,7 @@ public class ProductMapper {
         entity.setImageUrl(req.getImageUrl());
         entity.setCategory(req.getCategory());
         entity.setStock(req.getStock());
+        entity.setSellerId(req.getSellerId());
         return entity;
     }
 }

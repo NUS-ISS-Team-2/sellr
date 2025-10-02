@@ -6,20 +6,38 @@ import RegisterPage from "./pages/RegisterPage";
 import { ContextProvider } from "./context/UserContext";
 import NotFoundPage from "./pages/NotFoundPage";
 import ProductsPage from "./pages/ProductsPage";
+import ProductDetailPage from "./pages/ProductDetailPage";
+import CartPage from "./pages/CartPage";
+import { CartProvider } from "./context/CartContext";
+import OrderCreatedPage from "./pages/OrderCreatedPage";
+import OrdersPage from "./pages/OrdersPage";
+import CheckoutPage from "./pages/CheckoutPage";
+import ProductManagementPage from "./pages/ProductManagementPage";
+import OrderManagementPage from "./pages/OrderManagementPage";
+import WishlistPage from "./pages/WishlistPage";
 
 export default function App() {
   return (
     <ContextProvider>
+      <CartProvider>
       <Router basename="/app">
         <Routes>
+          <Route path="/product-management" element={<ProductManagementPage />} />
           <Route path="/" element={<MainPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/products" element={<ProductsPage />} />
-
+          <Route path="/cart" element={<CartPage />} />
+          <Route path="/products/:id" element={<ProductDetailPage />} />
+          <Route path="/orderCreated" element={<OrderCreatedPage/>} />
+          <Route path="/myorders" element={<OrdersPage/>} />
+          <Route path="/checkout" element={<CheckoutPage />} />
+          <Route path="/manageorders" element={<OrderManagementPage />} />
+          <Route path="/wishlist" element={<WishlistPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Router>
+      </CartProvider>
     </ContextProvider>
   );
 }

@@ -1,4 +1,5 @@
 import React, { useRef, useEffect } from "react";
+import { Link } from "react-router-dom";
 
 export default function ProductSlider({ products, scrollSpeed = 1 }) {
   const sliderRef = useRef(null);
@@ -38,10 +39,12 @@ export default function ProductSlider({ products, scrollSpeed = 1 }) {
         className="flex space-x-4 overflow-x-auto scrollbar-hide pb-2"
       >
         {loopProducts.map((product, index) => (
-          <div
-            key={index}
-            className="min-w-[250px] bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition"
-          >
+          <Link
+            key={product.id ?? index}
+            to={`/products/${product.id}`}
+            className="shrink-0 min-w-[250px] bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition block no-underline text-inherit focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            title={product.name}
+            >
             <img
               src={product.imageUrl}
               alt={product.name}
@@ -54,7 +57,7 @@ export default function ProductSlider({ products, scrollSpeed = 1 }) {
                 ${product.price.toLocaleString()}
               </p>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
     </div>

@@ -25,7 +25,6 @@ public class ProductService {
     private final MongoTemplate mongoTemplate;
     private final ProductMapper productMapper;
 
-
     public ProductService(
             ProductRepository productRepository,
             MongoTemplate mongoTemplate,
@@ -81,6 +80,8 @@ public class ProductService {
         existing.setDescription(request.getDescription());
         existing.setPrice(request.getPrice());
         existing.setImageUrl(request.getImageUrl());
+        existing.setStock(request.getStock());
+        existing.setCategory(request.getCategory());
 
         Product updated = productRepository.save(existing);
 
@@ -103,8 +104,7 @@ public class ProductService {
             String regex = ".*" + Pattern.quote(q.trim()) + ".*";
             criteriaList.add(new Criteria().orOperator(
                     Criteria.where("name").regex(regex, "i"),
-                    Criteria.where("description").regex(regex, "i")
-            ));
+                    Criteria.where("description").regex(regex, "i")));
         }
 
         if (category != null && !category.isBlank()) {
@@ -130,5 +130,13 @@ public class ProductService {
         return new PageImpl<>(responses, pageable, total);
     }
 
+    public Product getProductEntityById(String id) {
+        return productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+    }
+
+    public Product saveProduct(Product product) {
+        return productRepository.save(product);
+    }
 
 }

@@ -3,6 +3,7 @@ import Footer from "../components/Footer";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
+import Header from "../components/Header";
 
 export default function RegisterPage() {
 
@@ -39,6 +40,8 @@ export default function RegisterPage() {
   };
 
   return (
+    <>
+    <Header />
     <div className="flex flex-col min-h-screen bg-blue-600">
       <main className="flex-1 flex items-center justify-center">
         <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-md text-gray-800">
@@ -125,5 +128,6 @@ export default function RegisterPage() {
       </main>
       <Footer />
     </div>
+    </>
   );
 }

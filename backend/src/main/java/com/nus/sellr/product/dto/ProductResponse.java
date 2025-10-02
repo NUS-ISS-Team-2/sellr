@@ -1,5 +1,10 @@
 package com.nus.sellr.product.dto;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public class ProductResponse {
     private String id;
     private String name;
@@ -8,6 +13,9 @@ public class ProductResponse {
     private String imageUrl;
     private String category;
     private int stock;
+    private String sellerId;
+    private boolean lowStock; // true if stock < 20
+
 
     public ProductResponse() {
     }
@@ -19,7 +27,8 @@ public class ProductResponse {
             double price,
             String imageUrl,
             String category,
-            int stock) {
+            int stock,
+            String sellerId) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -27,53 +36,13 @@ public class ProductResponse {
         this.imageUrl = imageUrl;
         this.category = category;
         this.stock = stock;
+        this.sellerId = sellerId;
+        this.lowStock = stock < 20; // automatically set lowStock
     }
 
-    public String getId() {
-        return id;
+        // Optional: setter that also updates lowStock
+    public void setStock(int stock) {
+        this.stock = stock;
+        this.lowStock = stock < 20;
     }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public double getPrice() {
-        return price;
-    }
-
-    public void setPrice(double price) {
-        this.price = price;
-    }
-
-    public String getImageUrl() {
-        return imageUrl;
-    }
-
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
-    }
-
-    public String getCategory() { return category; }
-
-    public void setCategory(String category) { this.category = category; }
-
-    public int getStock() { return stock; }
-
-    public void setStock(int stock) { this.stock = stock; }
 }
