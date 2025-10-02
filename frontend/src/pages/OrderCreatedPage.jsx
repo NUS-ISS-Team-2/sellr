@@ -3,6 +3,9 @@ import { Link, useLocation } from "react-router-dom";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import axios from "axios";
+import { API_BASE_URL } from "../config";
+
+const API_URL = `${API_BASE_URL}/orders`;
 
 export default function OrderCreatedPage() {
   const [order, setOrder] = useState(null);
@@ -10,7 +13,6 @@ export default function OrderCreatedPage() {
   const location = useLocation();
   const orderId = location.state?.orderId;
 
-  const API_URL = "http://localhost:8080/api/orders";
 
   // Fetch order details
   useEffect(() => {

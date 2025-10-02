@@ -2,6 +2,7 @@ import { useState, useContext, useEffect } from "react";
 import axios from "axios";
 import { UserContext } from "../context/UserContext";
 import Header from "../components/Header";
+import { API_BASE_URL } from "../config";
 
 export default function OrderManagementPage() {
   const [orders, setOrders] = useState([]);
@@ -9,7 +10,7 @@ export default function OrderManagementPage() {
   const [loading, setLoading] = useState(true);
   const [deliveryDates, setDeliveryDates] = useState({});
 
-  const API_URL = "http://localhost:8080/api/orders";
+  const API_URL = `${API_BASE_URL}/orders`;
   const { userId } = useContext(UserContext);
 
   useEffect(() => {

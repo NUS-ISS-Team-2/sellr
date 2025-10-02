@@ -1,5 +1,6 @@
 import { createContext, useState, useContext, useEffect } from "react";
 import axios from "axios";
+import { API_BASE_URL } from "../config";
 
 const CartContext = createContext();
 
@@ -15,7 +16,7 @@ export const CartProvider = ({ children }) => {
 
   const fetchCart = async (userId) => {
     try {
-      const res = await axios.get(`http://localhost:8080/api/cart/?userId=${userId}`);
+      const res = await axios.get(`${API_BASE_URL}/cart/?userId=${userId}`);
       if (res.status === 200) {
         handleSetCartItems(res.data.items);
         console.log(res.data)
@@ -38,7 +39,7 @@ export const CartProvider = ({ children }) => {
 
       const newQuantity = (existing?.quantity || 0) + qtyChange;
 
-      const res = await axios.put("http://localhost:8080/api/cart/", {
+      const res = await axios.put(`${API_BASE_URL}/cart/`, {
         userId,
         productId: existing.productId,
         quantity: newQuantity
@@ -58,7 +59,7 @@ export const CartProvider = ({ children }) => {
   const addToCart = async (userId, item) => {
 
     console.log(userId, item.id)
-    const res = await axios.post("http://localhost:8080/api/cart/add", {
+    const res = await axios.post(`${API_BASE_URL}/cart/add`, {
       userId,
       productId: item.id,
       quantity: 1
@@ -74,7 +75,7 @@ export const CartProvider = ({ children }) => {
 
   const removeFromCart = async (userId, productId) => {
     try {
-      const res = await axios.delete(`http://localhost:8080/api/cart/remove?userId=${userId}&productId=${productId}`);
+      const res = await axios.delete(`${API_BASE_URL}/cart/remove?userId=${userId}&productId=${productId}`);
       if (res.status === 200) {
         fetchCart(userId);
       }

@@ -4,6 +4,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import Header from "../components/Header";
+import { API_BASE_URL } from "../config";
 
 export default function RegisterPage() {
 
@@ -22,7 +23,7 @@ export default function RegisterPage() {
       return;
     }
     try {
-      await axios.post("http://localhost:8080/api/users", {
+      await axios.post(`${API_BASE_URL}/users`, {
         username: username,
         email: email,
         password: password,
