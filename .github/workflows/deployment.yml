@@ -152,7 +152,7 @@ jobs:
           port: 22
           script: |
             echo "Deploying Sellr project..."
-            cd /sellr   # root folder with docker-compose.yml
+            cd /root/sellr
             git reset --hard
             git pull origin main
             docker compose down
