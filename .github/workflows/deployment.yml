@@ -129,6 +129,7 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_PROJECTKEY: ${{ secrets.SONAR_PROJECTKEY }}
+          MONGO_URI: ${{ secrets.MONGO_URI }}
         run: mvn -f backend/pom.xml -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=$SONAR_PROJECTKEY -Dspring.profiles.active=prod
   # -------------------------
   # Deploy to DigitalOcean
