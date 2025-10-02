@@ -77,4 +77,10 @@ public class ProductController {
         Page<ProductResponse> results = productService.search(q, category, pageable);
         return ResponseEntity.ok(results);
     }
+
+    // Get products by seller
+    @GetMapping("/my-products")
+    public List<ProductResponse> getProductsBySeller(@RequestParam String sellerId) {
+        return productService.getProductsBySellerId(sellerId);
+    }
 }

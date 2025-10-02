@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 public class ProductService {
@@ -139,4 +140,22 @@ public class ProductService {
         return productRepository.save(product);
     }
 
+    public List<ProductResponse> getProductsBySellerId(String sellerId) {
+        return productRepository.findBySellerId(sellerId).stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    private ProductResponse toResponse(Product product) {
+        return new ProductResponse(
+                product.getId(),
+                product.getName(),
+                product.getDescription(),
+                product.getPrice(),
+                product.getImageUrl(),
+                product.getCategory(),
+                product.getStock(),
+                product.getSellerId()
+        );
+    }
 }

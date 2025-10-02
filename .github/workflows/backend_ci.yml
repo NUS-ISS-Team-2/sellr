@@ -4,17 +4,16 @@ on:
   push:
     branches:
       - develop
-      - main
   pull_request:
     branches:
       - develop
-      - main
       
 jobs:
   build-and-analyse:
     name: Backend CI 
     runs-on: ubuntu-latest
-
+    env: 
+      MONGO_URI: ${{ secrets.MONGO_URI }}
     services:
       mongo:
         image: mongo:5.0
@@ -59,4 +58,4 @@ jobs:
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         SONAR_PROJECTKEY: ${{ secrets.SONAR_PROJECTKEY }}
-      run: mvn -f backend/pom.xml -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=$SONAR_PROJECTKEY
+      run: mvn -f backend/pom.xml -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=$SONAR_PROJECTKEY -Dspring.profiles.active=prod

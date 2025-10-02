@@ -4,6 +4,7 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import axios from "axios";
 import { UserContext } from "../context/UserContext";
+import { API_BASE_URL } from "../config";
 
 export default function OrdersPage() {
     const [orders, setOrders] = useState([]);
@@ -14,7 +15,7 @@ export default function OrdersPage() {
     useEffect(() => {
         async function fetchOrders() {
             try {
-                const res = await axios.get(`http://localhost:8080/api/orders/user/${userId}`); // adjust endpoint if needed
+                const res = await axios.get(`${API_BASE_URL}/orders/user/${userId}`); // adjust endpoint if needed
                 setOrders(res.data);
             } catch (err) {
                 console.error("Error fetching orders:", err);
@@ -77,8 +78,14 @@ export default function OrdersPage() {
                                     </p>
                                     <p>
                                         <strong>Status:</strong>{" "}
-                                        <span className="font-medium text-yellow-600">{order.status}</span>
+                                        <span
+                                            className={`font-medium ${order.overallStatus === "COMPLETED" ? "text-green-600" : "text-yellow-600"
+                                                }`}
+                                        >
+                                            {order.overallStatus}
+                                        </span>
                                     </p>
+
                                     <p>
                                         <strong>Items:</strong> {order.items.length}
                                     </p>

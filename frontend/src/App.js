@@ -20,7 +20,7 @@ export default function App() {
   return (
     <ContextProvider>
       <CartProvider>
-      <Router basename="/app">
+      <Router basename="/">
         <Routes>
           <Route path="/product-management" element={<ProductManagementPage />} />
           <Route path="/" element={<MainPage />} />

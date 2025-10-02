@@ -4,6 +4,7 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import axios from "axios";
 import { useCart } from "../context/CartContext";
+import { API_BASE_URL } from "../config";
 
 export default function CheckoutPage() {
   const location = useLocation();
@@ -15,7 +16,7 @@ export default function CheckoutPage() {
 
   const handlePlaceOrder = async () => {
     try {
-      const res = await axios.post("http://localhost:8080/api/orders/checkout", {
+      const res = await axios.post(`${API_BASE_URL}/orders/checkout`, {
         userId,
         address,
         paymentMethod,
