@@ -36,12 +36,12 @@ public class OrderController {
         return ResponseEntity.ok(orders);
     }
 
-    // 4. Update Order Item Status
-    @PatchMapping("/item/status")
-    public ResponseEntity<Void> updateOrderItemStatus(@RequestBody UpdateOrderItemStatusDTO updateDTO) {
-        orderService.updateOrderItemStatus(updateDTO);
-        return ResponseEntity.noContent().build();
-    }
+//    // 4. Update Order Item Status
+//    @PatchMapping("/item/status")
+//    public ResponseEntity<Void> updateOrderItemStatus(@RequestBody UpdateOrderItemStatusDTO updateDTO) {
+//        orderService.updateOrderItemStatus(updateDTO);
+//        return ResponseEntity.noContent().build();
+//    }
 
     // 5. Add Review to Order Item
     @PatchMapping("/item/review")
@@ -76,6 +76,15 @@ public class OrderController {
                 request.getSellerId(),
                 request.getStatus(),
                 request.getDeliveryDate()
+        );
+    }
+
+    @PutMapping("/buyer/status")
+    public void updateItemStatusAsBuyer(@RequestBody UpdateOrderItemStatusDTO request) {
+        orderService.updateOrderItemStatusAsBuyer(
+                request.getOrderId(),
+                request.getProductId(),
+                request.getStatus()
         );
     }
 }

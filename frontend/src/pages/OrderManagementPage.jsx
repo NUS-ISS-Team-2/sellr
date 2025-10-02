@@ -7,7 +7,7 @@ export default function OrderManagementPage() {
   const [orders, setOrders] = useState([]);
   const [viewOrder, setViewOrder] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [deliveryDates, setDeliveryDates] = useState({}); // store delivery dates keyed by productId
+  const [deliveryDates, setDeliveryDates] = useState({});
 
   const API_URL = "http://localhost:8080/api/orders";
   const { userId } = useContext(UserContext);
@@ -41,8 +41,10 @@ export default function OrderManagementPage() {
         deliveryDate: new Date(deliveryDate).toISOString(),
       });
 
-      // Fetch updated order from backend
-      const res = await axios.get(`${API_URL}/${orderId}`);
+      // Fetch updated order for this seller only
+      const res = await axios.get(`${API_URL}/${orderId}`, {
+        params: { sellerId: userId },
+      });
       const updatedOrder = res.data;
 
       // Update orders list
@@ -65,12 +67,6 @@ export default function OrderManagementPage() {
     setDeliveryDates((prev) => ({ ...prev, [productId]: date }));
   };
 
-  const getDefaultDeliveryDate = () => {
-    const date = new Date();
-    date.setDate(date.getDate() + 3);
-    return date.toISOString().split("T")[0]; // YYYY-MM-DD
-  };
-
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
       <Header />
@@ -87,7 +83,15 @@ export default function OrderManagementPage() {
                   <th className="px-4 py-3">User ID</th>
                   <th className="px-4 py-3">Date</th>
                   <th className="px-4 py-3">Total</th>
-                  <th className="px-4 py-3">Status</th>
+                  <th className="px-4 py-3 relative text-left text-sm font-semibold text-gray-700">
+                    Status
+                    <span className="ml-1 relative group cursor-pointer">
+                      ℹ️
+                      <span className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-48 bg-gray-800 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity z-50">
+                        Status of the order may still be PENDING if they have orders pending from other sellers.
+                      </span>
+                    </span>
+                  </th>
                   <th className="px-4 py-3">Actions</th>
                 </tr>
               </thead>
@@ -141,7 +145,7 @@ export default function OrderManagementPage() {
               <h3 className="mt-4 font-semibold">Items:</h3>
               <ul className="space-y-3">
                 {viewOrder.items.map((item) => {
-                  const defaultDate = deliveryDates[item.productId] || getDefaultDeliveryDate();
+                  const defaultDate = deliveryDates[item.productId] || "";
 
                   return (
                     <li
@@ -158,15 +162,21 @@ export default function OrderManagementPage() {
                           <p className="font-medium">{item.productName}</p>
                           <p>Qty: {item.quantity}</p>
                           <p>Status: {item.status}</p>
-                          <p>
-                            Estimated Delivery: {new Date(item.deliveryDate).toLocaleString(undefined, {
-                              year: "numeric",
-                              month: "short",
-                              day: "numeric",
-                              hour: "numeric",
-                              minute: "2-digit",
-                            })}
-                          </p>                        </div>
+                          {item.deliveryDate ? (
+                            <p>
+                              Estimated Delivery:{" "}
+                              {new Date(item.deliveryDate).toLocaleString(undefined, {
+                                year: "numeric",
+                                month: "short",
+                                day: "numeric",
+                                hour: "numeric",
+                                minute: "2-digit",
+                              })}
+                            </p>
+                          ) : (
+                            <p>Estimated Delivery: —</p>
+                          )}
+                        </div>
                       </div>
 
                       {item.status === "PENDING" && (
@@ -182,8 +192,7 @@ export default function OrderManagementPage() {
                               handleMarkAsShipped(viewOrder.orderId, item.productId, defaultDate)
                             }
                             disabled={!defaultDate}
-                            className={`px-3 py-1 rounded text-white ${defaultDate ? "bg-green-500 hover:bg-green-600" : "bg-gray-400 cursor-not-allowed"
-                              }`}
+                            className={`px-3 py-1 rounded text-white ${defaultDate ? "bg-green-500 hover:bg-green-600" : "bg-gray-400 cursor-not-allowed"}`}
                           >
                             Mark as Shipped
                           </button>

@@ -16,15 +16,27 @@ export default function MainPage() {
   const [editingProduct, setEditingProduct] = useState(null);
   const [viewingProduct, setViewingProduct] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
-  const { role } = useContext(UserContext);
+  const { role, userId } = useContext(UserContext);
 
-  // Fetch products
   useEffect(() => {
-    axios
-      .get("http://localhost:8080/api/products")
-      .then((res) => setProducts(res.data))
-      .catch((err) => console.error("Error fetching products:", err));
-  }, []);
+    const fetchProducts = async () => {
+      try {
+        let url = "http://localhost:8080/api/products";
+
+        if (role === "SELLER") {
+          // Fetch only this seller's products
+          url += `/my-products?sellerId=${userId}`;
+        }
+
+        const res = await axios.get(url);
+        setProducts(res.data);
+      } catch (err) {
+        console.error("Error fetching products:", err);
+      }
+    };
+
+    fetchProducts();
+  }, [role, userId]);
 
   // After create/update
   const handleProductAdded = (newProduct) => {
@@ -57,11 +69,11 @@ export default function MainPage() {
       <Hero />
 
       <main className="flex-1 container mx-auto px-6 py-10">
-      {(role === "SELLER" || role === "ADMIN") && (
-        <div className="flex justify-between items-center mb-6">
-          <h3 className="text-2xl font-bold">Your Products</h3>
-        </div>
-      )}
+        {(role === "SELLER" || role === "ADMIN") && (
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-2xl font-bold">Your Products</h3>
+          </div>
+        )}
 
 
         {/* Modal: Create/Edit */}

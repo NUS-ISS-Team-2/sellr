@@ -11,7 +11,7 @@ export default function ProductSlider({ products, scrollSpeed = 1 }) {
   };
 
   // Duplicate products for seamless scrolling if more than 1
-  const loopProducts = products.length > 1 ? [...products, ...products] : products;
+  const loopProducts = products.length >= 4 ? [...products, ...products] : products;
 
   useEffect(() => {
     const slider = sliderRef.current;

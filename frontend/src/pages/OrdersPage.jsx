@@ -77,8 +77,14 @@ export default function OrdersPage() {
                                     </p>
                                     <p>
                                         <strong>Status:</strong>{" "}
-                                        <span className="font-medium text-yellow-600">{order.status}</span>
+                                        <span
+                                            className={`font-medium ${order.overallStatus === "COMPLETED" ? "text-green-600" : "text-yellow-600"
+                                                }`}
+                                        >
+                                            {order.overallStatus}
+                                        </span>
                                     </p>
+
                                     <p>
                                         <strong>Items:</strong> {order.items.length}
                                     </p>
