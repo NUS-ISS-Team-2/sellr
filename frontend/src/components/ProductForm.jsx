@@ -1,6 +1,7 @@
 import React, { useState, useContext, useEffect } from "react";
 import { UserContext } from "../context/UserContext";
 import axios from "axios";
+import { API_BASE_URL } from "../config";
 
 export default function ProductForm({ onProductAdded, initialData, onClose }) {
   const [name, setName] = useState("");
@@ -11,7 +12,7 @@ export default function ProductForm({ onProductAdded, initialData, onClose }) {
   const [stock, setStock] = useState(0);
   const { userId } = useContext(UserContext);
 
-  const API_URL = "http://localhost:8080/api/products";
+const API_URL = `${API_BASE_URL}/products`;
 
   // When initialData changes (edit vs create), reset form fields accordingly
   useEffect(() => {

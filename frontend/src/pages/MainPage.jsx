@@ -9,6 +9,7 @@ import ProductView from "../components/ProductView";
 import ConfirmDeleteModal from "../components/ConfirmDeleteModal";
 import { UserContext } from "../context/UserContext";
 import ProductSlider from "../components/ProductSlider";
+import { API_BASE_URL } from "../config";
 
 export default function MainPage() {
   const [products, setProducts] = useState([]);
@@ -21,7 +22,8 @@ export default function MainPage() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        let url = "http://localhost:8080/api/products";
+        let url = `${API_BASE_URL}/products`;
+        console.log(API_BASE_URL)
 
         if (role === "SELLER") {
           // Fetch only this seller's products
@@ -54,7 +56,7 @@ export default function MainPage() {
   const confirmDeleteProduct = async () => {
     if (!confirmDelete) return;
     try {
-      await axios.delete(`http://localhost:8080/api/products/${confirmDelete.id}`);
+      await axios.delete(`${API_BASE_URL}/products/${confirmDelete.id}`);
       setProducts((prev) => prev.filter((p) => p.id !== confirmDelete.id));
     } catch (err) {
       console.error("Failed to delete product:", err);

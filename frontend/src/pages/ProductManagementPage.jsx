@@ -3,6 +3,8 @@ import Header from "../components/Header";
 import ProductForm from "../components/ProductForm";
 import ConfirmDeleteModal from "../components/ConfirmDeleteModal";
 import { UserContext } from "../context/UserContext";
+import { API_BASE_URL } from "../config";
+const API_URL = `${API_BASE_URL}/products`;
 
 export default function ProductManagementPage() {
   const [products, setProducts] = useState([]);
@@ -12,7 +14,6 @@ export default function ProductManagementPage() {
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [viewProduct, setViewProduct] = useState(null);
 
-  const API_URL = "http://localhost:8080/api/products";
   const { userId, role } = useContext(UserContext);
 
   useEffect(() => {
