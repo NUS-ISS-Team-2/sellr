@@ -179,7 +179,10 @@ public class UserService {
 
     public Role saveUser(User user) {
         Role role = UNKNOWN;
-        if (user == null) return role;
+        if (user == null)
+        {
+            return role;
+        }
         if (user instanceof Admin) {
             adminRepository.save((Admin) user);
             role = ADMIN;

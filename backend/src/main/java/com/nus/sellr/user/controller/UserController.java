@@ -1,7 +1,6 @@
 package com.nus.sellr.user.controller;
 
 import com.nus.sellr.user.dto.*;
-import com.nus.sellr.user.entity.User;
 import com.nus.sellr.user.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
