@@ -1,12 +1,14 @@
 package com.nus.sellr.user.controller;
 
-import com.nus.sellr.user.dto.LoginRequest;
-import com.nus.sellr.user.dto.CreateUserRequest;
-import com.nus.sellr.user.dto.CreateUserResponse;
-import com.nus.sellr.user.dto.LoginResponse;
+import com.nus.sellr.user.dto.*;
+import com.nus.sellr.user.entity.User;
 import com.nus.sellr.user.service.UserService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/users")
@@ -34,5 +36,41 @@ public class UserController {
     public ResponseEntity<LoginResponse> loginUser(@RequestBody LoginRequest loginRequest) {
         LoginResponse loginResponse = userService.loginUser(loginRequest);
         return ResponseEntity.ok(loginResponse);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<UserResponse>> getAllUsers() {
+        List<UserResponse> users = userService.getAllUsers();
+        return ResponseEntity.ok(users);
+    }
+
+    @PutMapping("/{userId}")
+    public ResponseEntity<UserResponse> updateUser(@PathVariable String userId, @RequestBody UpdateUser dto) {
+        UserResponse updatedUser = userService.updateUser(userId, dto);
+        return ResponseEntity.ok(updatedUser);
+    }
+
+    @PutMapping("/{userId}/password")
+    public ResponseEntity<String> changePassword(
+            @PathVariable String userId,
+            @RequestBody Map<String, String> body) {
+
+        String newPassword = body.get("password");
+        if (newPassword == null || newPassword.isBlank()) {
+            return ResponseEntity.badRequest().body("Password cannot be empty");
+        }
+
+        userService.changePassword(userId, newPassword);
+        return ResponseEntity.ok("Password updated successfully");
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteUser(@PathVariable("id") String userId) {
+        try {
+            userService.deleteUser(userId);
+            return ResponseEntity.ok("User deleted successfully");
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
     }
 }

@@ -20,4 +20,5 @@ public class OrderItemDTO {
     private Integer rating;
     private String review;
     private String sellerId;
+    private double price;
 }
