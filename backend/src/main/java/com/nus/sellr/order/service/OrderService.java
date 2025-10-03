@@ -56,6 +56,7 @@ public class OrderService {
                 item.setStatus(OrderStatus.PENDING);
                 item.setImageUrl(dto.getImageUrl());
                 item.setSellerId((dto.getSellerId()));
+                item.setPrice(dto.getPrice());
                 return item;
             }).collect(Collectors.toList())
         );
@@ -205,6 +206,7 @@ public class OrderService {
         dto.setRating(item.getRating());
         dto.setReview(item.getReview());
         dto.setSellerId(item.getSellerId());
+        dto.setPrice(item.getPrice());
         return dto;
     }
 

@@ -44,9 +44,9 @@ export default function Header() {
   };
 
   const handleMyWishlist = () => {
-      navigate("/wishlist");
-      setOpenDropdown(null);
-  };  
+    navigate("/wishlist");
+    setOpenDropdown(null);
+  };
 
   return (
     <header className="bg-blue-600 text-white">
@@ -62,6 +62,42 @@ export default function Header() {
               Shop
             </Link>
           </nav>
+          {/* Admin Dropdown */}
+          {role === "ADMIN" && (
+            <div className="relative">
+              <button
+                onClick={() =>
+                  setOpenDropdown(openDropdown === "ADMIN" ? null : "ADMIN")
+                }
+                className="font-medium hover:underline"
+              >
+                Admin Console
+              </button>
+
+              {openDropdown === "ADMIN" && (
+                <div className="absolute right-0 top-full mt-2 w-40 bg-white text-black rounded shadow-lg z-10">
+                  <button
+                    onClick={() => {
+                      navigate("/users"); 
+                      setOpenDropdown(null);
+                    }}
+                    className="w-full text-left px-4 py-2 hover:bg-gray-200"
+                  >
+                    View All Users
+                  </button>
+                  <button
+                    onClick={() => {
+                      navigate("/product-management"); 
+                      setOpenDropdown(null);
+                    }}
+                    className="w-full text-left px-4 py-2 hover:bg-gray-200"
+                  >
+                    View All Products
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Seller Dropdown */}
           {role === "SELLER" || role === "ADMIN" ? (

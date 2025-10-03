@@ -42,11 +42,21 @@ export default function OrderManagementPage() {
         deliveryDate: new Date(deliveryDate).toISOString(),
       });
 
-      // Fetch updated order for this seller only
+      // Fetch updated order
       const res = await axios.get(`${API_URL}/${orderId}`, {
         params: { sellerId: userId },
       });
-      const updatedOrder = res.data;
+      let updatedOrder = res.data;
+
+      // ✅ Filter items only for this seller
+      if (updatedOrder.items) {
+        updatedOrder = {
+          ...updatedOrder,
+          items: updatedOrder.items.filter(
+            (item) => item.sellerId === userId
+          ),
+        };
+      }
 
       // Update orders list
       setOrders((prevOrders) =>
@@ -66,6 +76,17 @@ export default function OrderManagementPage() {
 
   const handleDateChange = (productId, date) => {
     setDeliveryDates((prev) => ({ ...prev, [productId]: date }));
+  };
+
+  const computeSellerStatus = (orderItems) => {
+    if (!orderItems || orderItems.length === 0) return "N/A";
+
+    const allShippedOrDelivered = orderItems.every(
+      item => item.status === "SHIPPED" || item.status === "DELIVERED"
+    );
+
+    if (allShippedOrDelivered) return "✅ Done (shipped)";
+    return "⏳ Pending";
   };
 
   return (
@@ -115,8 +136,15 @@ export default function OrderManagementPage() {
                       <td className="px-4 py-4">{order.orderId}</td>
                       <td className="px-4 py-4">{order.userId}</td>
                       <td className="px-4 py-4">{new Date(order.createdAt).toLocaleString()}</td>
-                      <td className="px-4 py-4">${order.orderPrice.toFixed(2)}</td>
-                      <td className="px-4 py-4">{order.overallStatus}</td>
+                      <td className="px-4 py-4">
+                        ${order.items
+                          .filter(item => item.sellerId === userId)
+                          .reduce((sum, item) => sum + (item.price * item.quantity), 0)
+                          .toFixed(2)}
+                      </td>
+                      <td className="px-4 py-4">
+                        {computeSellerStatus(order.items.filter(item => item.sellerId === userId))}
+                      </td>
                       <td className="px-4 py-4">
                         <button
                           onClick={() => setViewOrder(order)}

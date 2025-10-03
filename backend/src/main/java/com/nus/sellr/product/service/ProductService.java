@@ -158,4 +158,13 @@ public class ProductService {
                 product.getSellerId()
         );
     }
+
+    public List<String> getAllCategories() {
+        // Get products with only category populated, then extract distinct categories
+        return productRepository.findAllCategories()
+                .stream()
+                .map(Product::getCategory)
+                .distinct()
+                .collect(Collectors.toList());
+    }
 }
