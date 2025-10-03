@@ -18,6 +18,7 @@ public class OrderItem {
     private OrderStatus status;
     private String imageUrl;
     private String sellerId;
+    private double price; 
 
     public OrderItem() {}
 
