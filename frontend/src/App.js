@@ -16,6 +16,7 @@ import ProductManagementPage from "./pages/ProductManagementPage";
 import OrderManagementPage from "./pages/OrderManagementPage";
 import WishlistPage from "./pages/WishlistPage";
 import UsersPage from "./pages/UserPage";
+import AddProductReviewPage from "./pages/AddProductReviewPage";
 
 export default function App() {
   return (
@@ -36,6 +37,7 @@ export default function App() {
           <Route path="/manageorders" element={<OrderManagementPage />} />
           <Route path="/wishlist" element={<WishlistPage />} />
           <Route path="/users" element={<UsersPage />} />
+          <Route path="/products/:id/review" element={<AddProductReviewPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Router>
