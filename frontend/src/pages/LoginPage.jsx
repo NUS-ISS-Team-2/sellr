@@ -36,8 +36,8 @@ export default function LoginPage() {
         navigate("/");
       }
     } catch (error) {
-      console.error("Error logging in", error);
-      alert("Login failed. Please try again.");
+      console.error("Error logging in", error.response?.data || error.message);
+      alert("Login failed: " + (error.response?.data?.message || "Please try again."));
     }
   };
 

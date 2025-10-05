@@ -44,7 +44,7 @@ export default function ProductSlider({ products, scrollSpeed = 1 }) {
           <Link
             key={product.id ?? index}
             to={`/products/${product.id}`}
-            className="shrink-0 min-w-[250px] bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition block no-underline text-inherit focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            className="shrink-0 w-[250px] bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition block no-underline text-inherit focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
             title={product.name}
           >
             <img
@@ -52,14 +52,15 @@ export default function ProductSlider({ products, scrollSpeed = 1 }) {
               alt={product.name}
               className="w-full h-48 object-cover"
             />
-            <div className="p-4">
-              <h4 className="font-semibold text-lg">{product.name}</h4>
-              <p className="text-gray-600">{truncate(product.description, 80)}</p>
+            <div className="p-4 h-[150px] overflow-hidden">
+              <h4 className="font-semibold text-lg">{truncate(product.name, 30)}</h4>
+              <p className="text-gray-600">{truncate(product.description, 30)}</p>
               <p className="text-gray-800 font-bold mt-2">
                 ${product.price.toLocaleString()}
               </p>
             </div>
           </Link>
+
         ))}
       </div>
     </div>
