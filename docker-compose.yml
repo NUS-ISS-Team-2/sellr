@@ -18,10 +18,13 @@ services:
         REACT_APP_API_BASE_URL: "/api"
     ports:
       - "80:80"
+      - "443:443"
     depends_on:
       - backend
     networks:
       - app-network
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt:ro
 
 networks:
   app-network:

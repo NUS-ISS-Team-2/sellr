@@ -80,20 +80,32 @@ export default function ProductsPage() {
           <main className="flex-1">
             {/* Filter indicator */}
             {(category || search) && (
-              <div className="mb-4 text-sm text-gray-600">
-                <span>Filtering by: </span>
+              <div className="mb-4 text-sm text-gray-600 flex flex-wrap gap-2">
                 {category && (
-                  <span className="inline-block px-2 py-1 mr-2 bg-blue-100 text-blue-700 rounded">
+                  <span className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-700 rounded">
                     Category: {category}
+                    <button
+                      onClick={() => setCategory(null)}
+                      className="ml-2 text-blue-700 hover:text-blue-900 font-bold"
+                    >
+                      ×
+                    </button>
                   </span>
                 )}
                 {search && (
-                  <span className="inline-block px-2 py-1 mr-2 bg-green-100 text-green-700 rounded">
+                  <span className="inline-flex items-center px-2 py-1 bg-green-100 text-green-700 rounded">
                     Search: "{search}"
+                    <button
+                      onClick={() => setSearch("")}
+                      className="ml-2 text-green-700 hover:text-green-900 font-bold"
+                    >
+                      ×
+                    </button>
                   </span>
                 )}
               </div>
             )}
+
 
             {loading && <div className="p-4">Loading…</div>}
 
