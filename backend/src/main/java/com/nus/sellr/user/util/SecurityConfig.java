@@ -27,7 +27,11 @@ public class SecurityConfig {
     public CorsFilter corsFilter() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
-        config.setAllowedOrigins(List.of("http://localhost:3000")); // your frontend
+        config.setAllowedOrigins(List.of(
+                "http://localhost:3000",   // dev
+                "https://sellr.site",      // production
+                "https://www.sellr.site"  
+        ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
 
