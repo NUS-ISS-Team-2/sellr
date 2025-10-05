@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import axios from "axios";
@@ -12,6 +12,7 @@ export default function OrderCreatedPage() {
   const [loading, setLoading] = useState(true);
   const location = useLocation();
   const orderId = location.state?.orderId;
+  const navigate = useNavigate();
 
 
   // Fetch order details
@@ -134,6 +135,21 @@ export default function OrderCreatedPage() {
                     className="mt-2 bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700"
                   >
                     Mark as Delivered
+                  </button>
+                )}
+
+                {/* Show only when delivered */}
+                {item.status === "DELIVERED" && (
+                  <button
+                    onClick={() =>
+                      navigate(`/products/${item.productId}/review`, {
+                        state: { productName: item.name },
+                      })
+                    }
+                    className="mt-2 bg-yellow-600 text-white px-3 py-1 rounded hover:bg-green-700"
+                    title={`Add a review for ${item.name}`}
+                  >
+                    Add Review
                   </button>
                 )}
               </div>

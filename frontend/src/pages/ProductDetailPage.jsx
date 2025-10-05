@@ -6,6 +6,8 @@ import { UserContext } from "../context/UserContext";
 import { useCart } from "../context/CartContext";
 import { getProductById, getRelatedProducts } from "../services/productService";
 import { addToWishlist } from "../services/wishlistService";
+import ProductReviews from "../components/ProductReviews";
+
 
 const PLACEHOLDER_IMG =
   "data:image/svg+xml;utf8," +
@@ -226,22 +228,27 @@ export default function ProductDetailPage() {
                   </button>
                 </div>
 
-                {/* Related Links */}
-                <div className="mt-4 flex gap-2">
-                  <Link to="/products" className="text-blue-600 hover:underline">Continue Shopping</Link>
-                  {product?.category && (
-                    <Link
-                      to={`/products?category=${encodeURIComponent(product.category)}`}
-                      className="text-blue-600 hover:underline"
-                    >
-                      More in {product.category}
-                    </Link>
-                  )}
-                </div>
+              {/* Related Links */}
+              <div className="mt-4 flex gap-2">
+                <Link to="/products" className="text-blue-600 hover:underline">Continue Shopping</Link>
+                {product?.category && (
+                  <Link
+                    to={`/products?category=${encodeURIComponent(product.category)}`}
+                    className="text-blue-600 hover:underline"
+                  >
+                    More in {product.category}
+                  </Link>
+                )}
+              </div>
               </>
             )}
           </div>
         </div>
+
+        {/* Reviews */}
+        {!loading && product?.id && (
+          <ProductReviews productId={product.id} pageSize={5} />
+        )}
 
         {/* Related Products */}
         {!loading && related.length > 0 && (
