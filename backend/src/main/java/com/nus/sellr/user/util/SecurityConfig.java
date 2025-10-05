@@ -30,7 +30,7 @@ public class SecurityConfig {
         config.setAllowedOrigins(List.of(
                 "http://localhost:3000",   // dev
                 "https://sellr.site",      // production
-                "https://www.sellr.site"  
+                "https://www.sellr.site"
         ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
