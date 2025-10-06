@@ -118,29 +118,14 @@ jobs:
       - name: Build & Test with coverage
         run: mvn -B -f backend/pom.xml verify
 
-  # -------------------------
-  # Backend SonarCloud
-  # -------------------------
-  backend-sonar:
-    runs-on: ubuntu-latest
-    needs: backend-build
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Backend SonarCloud Scan
-        working-directory: backend
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_PROJECTKEY: ${{ secrets.SONAR_PROJECTKEY }}
-          MONGO_URI: ${{ secrets.MONGO_URI }}
-        run: |
-          mvn -B -f pom.xml sonar:sonar \
-            -Dsonar.projectKey=$SONAR_PROJECTKEY \
-            -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.login=$SONAR_TOKEN \
-            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
-            -Dspring.profiles.active=prod
+      - name: SonarCloud Scan
+        run: | 
+          mvn -B -f backend/pom.xml sonar:sonar \
+          -Dsonar.projectKey=$SONAR_PROJECTKEY \
+          -Dsonar.host.url=https://sonarcloud.io \
+          -Dsonar.login=$SONAR_TOKEN \
+          -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
+          -Dspring.profiles.active=prod
 
   # -------------------------
   # Deploy to DigitalOcean
