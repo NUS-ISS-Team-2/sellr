@@ -10,7 +10,11 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Query;
 
 import java.util.Arrays;
 import java.util.List;
@@ -23,6 +27,8 @@ class ProductServiceTest {
 
     @Mock
     private ProductRepository productRepository;
+    @Mock
+    private MongoTemplate mongoTemplate;
 
     @Mock
     private ProductMapper productMapper;
@@ -129,13 +135,26 @@ class ProductServiceTest {
     }
 
     @Test
-    void testDeleteProduct() {
-        when(productRepository.existsById("prod1")).thenReturn(true);
-        doNothing().when(productRepository).deleteById("prod1");
+    void testDeleteProduct_exists() {
+        String id = "p1";
+        when(productRepository.existsById(id)).thenReturn(true);
 
-        productService.deleteProduct("prod1");
+        productService.deleteProduct(id);
 
-        verify(productRepository, times(1)).deleteById("prod1");
+        verify(productRepository, times(1)).deleteById(id);
+    }
+
+    @Test
+    void testDeleteProduct_notExists() {
+        String id = "p1";
+        when(productRepository.existsById(id)).thenReturn(false);
+
+        Exception ex = assertThrows(IllegalArgumentException.class, () -> {
+            productService.deleteProduct(id);
+        });
+
+        assertEquals("Product not found with id: p1", ex.getMessage());
+        verify(productRepository, never()).deleteById(any());
     }
 
     @Test
@@ -171,4 +190,77 @@ class ProductServiceTest {
         assertTrue(result.contains("cat1"));
         assertTrue(result.contains("cat2"));
     }
+
+    @Test
+    void testGetProductEntityById_exists() {
+        Product product = new Product();
+        product.setId("p1");
+        when(productRepository.findById("p1")).thenReturn(Optional.of(product));
+
+        Product result = productService.getProductEntityById("p1");
+
+        assertEquals(product, result);
+    }
+
+    @Test
+    void testGetProductEntityById_notExists() {
+        when(productRepository.findById("p1")).thenReturn(Optional.empty());
+
+        RuntimeException ex = assertThrows(RuntimeException.class, () -> {
+            productService.getProductEntityById("p1");
+        });
+
+        assertEquals("Product not found", ex.getMessage());
+    }
+
+    // saveProduct
+    @Test
+    void testSaveProduct() {
+        Product product = new Product();
+        product.setId("p1");
+
+        when(productRepository.save(product)).thenReturn(product);
+
+        Product result = productService.saveProduct(product);
+
+        assertEquals(product, result);
+    }
+
+    // search
+    @Test
+    void testSearch_withQueryAndCategory() {
+        Pageable pageable = PageRequest.of(0, 10);
+        Product product = new Product();
+        product.setId("p1");
+        List<Product> products = List.of(product);
+        List<ProductResponse> responses = List.of(new ProductResponse());
+
+        when(mongoTemplate.find(any(Query.class), eq(Product.class))).thenReturn(products);
+        when(mongoTemplate.count(any(Query.class), eq(Product.class))).thenReturn(1L);
+        when(productMapper.toResponseList(products)).thenReturn(responses);
+
+        Page<ProductResponse> result = productService.search("phone", "electronics", pageable);
+
+        assertEquals(1, result.getTotalElements());
+        assertEquals(responses, result.getContent());
+    }
+
+    @Test
+    void testSearch_emptyQueryAndCategory() {
+        Pageable pageable = PageRequest.of(0, 10);
+        Product product = new Product();
+        List<Product> products = List.of(product);
+        List<ProductResponse> responses = List.of(new ProductResponse());
+
+        when(mongoTemplate.find(any(Query.class), eq(Product.class))).thenReturn(products);
+        when(mongoTemplate.count(any(Query.class), eq(Product.class))).thenReturn(1L);
+        when(productMapper.toResponseList(products)).thenReturn(responses);
+
+        Page<ProductResponse> result = productService.search(null, null, pageable);
+
+        assertEquals(1, result.getTotalElements());
+        assertEquals(responses, result.getContent());
+    }
+
+
 }
