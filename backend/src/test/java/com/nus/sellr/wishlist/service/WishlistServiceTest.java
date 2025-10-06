@@ -2,7 +2,6 @@ package com.nus.sellr.wishlist.service;
 
 import com.nus.sellr.product.entity.Product;
 import com.nus.sellr.product.repository.ProductRepository;
-import com.nus.sellr.user.entity.Buyer;
 import com.nus.sellr.wishlist.dto.WishlistDTO;
 import com.nus.sellr.wishlist.entity.Wishlist;
 import com.nus.sellr.wishlist.entity.WishlistItem;
@@ -13,8 +12,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.math.BigDecimal;
-import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
