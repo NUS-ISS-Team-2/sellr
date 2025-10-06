@@ -1,0 +1,125 @@
+name: Develop Branch CI/CD
+
+on:
+  push:
+    branches:
+      - develop
+  pull_request:
+    branches:
+      - develop
+    
+
+jobs:
+  # -------------------------
+  # Frontend build/test with coverage + Frontend SonarCloud
+  # -------------------------
+  frontend-build:
+    runs-on: ubuntu-latest
+    outputs:
+      build-dir: frontend/build
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+
+      - name: Cache Node.js modules
+        uses: actions/cache@v3
+        with:
+          path: frontend/node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('frontend/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies
+        run: npm install
+        working-directory: frontend
+
+      - name: Run ESLint
+        run: npm run lint
+        working-directory: frontend
+
+      - name: Run tests with coverage
+        run: npm test -- --coverage --watchAll=false --passWithNoTests
+        working-directory: frontend
+
+      - name: Build app
+        id: build
+        run: |
+          npm run build
+          echo "build-dir=frontend/build" >> $GITHUB_OUTPUT
+        working-directory: frontend
+
+      - name: SonarCloud Scan (Frontend)
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_PROJECTKEY: ${{ secrets.SONAR_PROJECTKEY }}
+          SONAR_ORG: ${{ secrets.SONAR_ORG }}
+        run: |
+          npx sonarqube-scanner \
+            -Dsonar.projectKey=$SONAR_PROJECTKEY \
+            -Dsonar.organization=$SONAR_ORG \
+            -Dsonar.sources=frontend/src \
+            -Dsonar.javascript.lcov.reportPaths=frontend/coverage/lcov.info \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.login=$SONAR_TOKEN \
+            -Dsonar.projectName="Sellr Frontend" \
+            -Dsonar.scm.provider=git
+
+  # -------------------------
+  # Backend build/test with JaCoCo coverage + Sonarqube
+  # -------------------------
+  backend-build:
+    runs-on: ubuntu-latest
+    env:
+      MONGO_URI: ${{ secrets.MONGO_URI }}
+    services:
+      mongo:
+        image: mongo:5.0
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.adminCommand({ ping: 1 })'" 
+          --health-interval 10s 
+          --health-timeout 5s 
+          --health-retries 5
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Cache Maven packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
+      - name: Run Checkstyle
+        run: mvn -f backend/pom.xml checkstyle:check
+
+      - name: Build & Test with coverage
+        run: mvn -B -f backend/pom.xml verify
+
+      - name: SonarCloud Scan
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_PROJECTKEY: ${{ secrets.SONAR_PROJECTKEY }}
+          SONAR_ORG: ${{ secrets.SONAR_ORG }}
+        run: | 
+          mvn -B -f backend/pom.xml sonar:sonar \
+          -Dsonar.projectKey=$SONAR_PROJECTKEY \
+          -Dsonar.host.url=https://sonarcloud.io \
+          -Dsonar.login=$SONAR_TOKEN \
+          -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
+          -Dspring.profiles.active=prod
