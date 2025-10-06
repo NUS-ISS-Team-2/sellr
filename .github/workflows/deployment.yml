@@ -7,7 +7,7 @@ on:
 
 jobs:
   # -------------------------
-  # Frontend build/test
+  # Frontend build/test with coverage
   # -------------------------
   frontend-build:
     runs-on: ubuntu-latest
@@ -38,8 +38,8 @@ jobs:
         run: npm run lint
         working-directory: frontend
 
-      - name: Run tests
-        run: npm test -- --watchAll=false --passWithNoTests
+      - name: Run tests with coverage
+        run: npm test -- --coverage --watchAll=false --passWithNoTests
         working-directory: frontend
 
       - name: Build app
@@ -58,6 +58,7 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
       - name: SonarCloud Scan
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -68,13 +69,14 @@ jobs:
             -Dsonar.projectKey=$SONAR_PROJECTKEY \
             -Dsonar.organization=$SONAR_ORG \
             -Dsonar.sources=frontend/src \
+            -Dsonar.javascript.lcov.reportPaths=frontend/coverage/lcov.info \
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.login=$SONAR_TOKEN \
             -Dsonar.projectName="Sellr Frontend" \
             -Dsonar.scm.provider=git
 
   # -------------------------
-  # Backend build/test
+  # Backend build/test with JaCoCo coverage
   # -------------------------
   backend-build:
     runs-on: ubuntu-latest
@@ -113,7 +115,7 @@ jobs:
       - name: Run Checkstyle
         run: mvn -f backend/pom.xml checkstyle:check
 
-      - name: Build & Test
+      - name: Build & Test with coverage
         run: mvn -f backend/pom.xml verify -B
 
   # -------------------------
@@ -125,18 +127,26 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-      - name: SonarCloud Scan
+
+      - name: Backend SonarCloud Scan
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_PROJECTKEY: ${{ secrets.SONAR_PROJECTKEY }}
           MONGO_URI: ${{ secrets.MONGO_URI }}
-        run: mvn -f backend/pom.xml -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=$SONAR_PROJECTKEY -Dspring.profiles.active=prod
+        run: mvn sonar:sonar \
+            -f backend/pom.xml \
+            -Dsonar.projectKey=$SONAR_PROJECTKEY \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.login=$SONAR_TOKEN \
+            -Dsonar.coverage.jacoco.xmlReportPaths=backend/target/site/jacoco/jacoco.xml \
+            -Dspring.profiles.active=prod
+
   # -------------------------
   # Deploy to DigitalOcean
   # -------------------------
   deploy:
     runs-on: ubuntu-latest
-    needs: [frontend-build, backend-build]  # this will ignore SonarCloud
+    needs: [frontend-build, backend-build]
     steps:
       - name: Setup SSH
         uses: webfactory/ssh-agent@v0.9.0
@@ -159,4 +169,3 @@ jobs:
             docker compose down
             docker compose up -d --build
             echo "Deployment completed"
-
