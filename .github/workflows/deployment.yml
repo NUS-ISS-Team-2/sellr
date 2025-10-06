@@ -135,7 +135,7 @@ jobs:
           SONAR_PROJECTKEY: ${{ secrets.SONAR_PROJECTKEY }}
           MONGO_URI: ${{ secrets.MONGO_URI }}
         run: |
-          mvn -B -f backend/pom.xml sonar:sonar \
+          mvn -B -f pom.xml sonar:sonar \
             -Dsonar.projectKey=$SONAR_PROJECTKEY \
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.login=$SONAR_TOKEN \
