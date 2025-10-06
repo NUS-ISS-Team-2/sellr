@@ -134,13 +134,13 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_PROJECTKEY: ${{ secrets.SONAR_PROJECTKEY }}
           MONGO_URI: ${{ secrets.MONGO_URI }}
-        run: mvn -B sonar:sonar \
+        run: |
+          mvn -B -f backend/pom.xml sonar:sonar \
             -Dsonar.projectKey=$SONAR_PROJECTKEY \
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.login=$SONAR_TOKEN \
             -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
             -Dspring.profiles.active=prod
-
 
   # -------------------------
   # Deploy to DigitalOcean
