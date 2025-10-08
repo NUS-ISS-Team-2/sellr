@@ -11,42 +11,43 @@ export default function SellerDashboard() {
 
   useEffect(() => {
     if (role !== "SELLER" || !userId) return;
+
+    const fetchDashboardData = async () => {
+      setLoading(true);
+      try {
+        // Fetch seller orders
+        const ordersRes = await axios.get(`${API_BASE_URL}/orders/seller`, {
+          params: { sellerId: userId },
+        });
+
+        const orders = ordersRes.data || [];
+
+        // Count outstanding order items (PENDING)
+        const outstandingCount = orders.reduce((count, order) => {
+          const pendingItems = order.items?.filter(
+            (item) => item.sellerId === userId && item.status === "PENDING"
+          ).length;
+          return count + (pendingItems || 0);
+        }, 0);
+        setOutstandingOrders(outstandingCount);
+
+        // Fetch seller products
+        const productsRes = await axios.get(
+          `${API_BASE_URL}/products/my-products?sellerId=${userId}`
+        );
+        const products = productsRes.data || [];
+
+        const lowStock = products.filter((p) => p.stock < 10).length;
+        setLowStockCount(lowStock);
+      } catch (err) {
+        console.error("Failed to load seller dashboard:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchDashboardData();
   }, [role, userId]);
-
-  const fetchDashboardData = async () => {
-    setLoading(true);
-    try {
-      // Fetch seller orders
-      const ordersRes = await axios.get(`${API_BASE_URL}/orders/seller`, {
-        params: { sellerId: userId },
-      });
-
-      const orders = ordersRes.data || [];
-
-      // Count outstanding order items (PENDING)
-      const outstandingCount = orders.reduce((count, order) => {
-        const pendingItems = order.items?.filter(
-          (item) => item.sellerId === userId && item.status === "PENDING"
-        ).length;
-        return count + (pendingItems || 0);
-      }, 0);
-      setOutstandingOrders(outstandingCount);
-
-      // Fetch seller products
-      const productsRes = await axios.get(
-        `${API_BASE_URL}/products/my-products?sellerId=${userId}`
-      );
-      const products = productsRes.data || [];
-
-      const lowStock = products.filter((p) => p.stock < 10).length;
-      setLowStockCount(lowStock);
-    } catch (err) {
-      console.error("Failed to load seller dashboard:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   if (role !== "SELLER") return null;
 
@@ -74,9 +75,7 @@ export default function SellerDashboard() {
             >
               {outstandingOrders}
             </p>
-            <p className="text-sm text-gray-500 mt-1">
-              Pending shipments
-            </p>
+            <p className="text-sm text-gray-500 mt-1">Pending shipments</p>
           </div>
 
           {/* Low Stock Products */}
@@ -91,9 +90,7 @@ export default function SellerDashboard() {
             >
               {lowStockCount}
             </p>
-            <p className="text-sm text-gray-500 mt-1">
-              Stock below 10 units
-            </p>
+            <p className="text-sm text-gray-500 mt-1">Stock below 10 units</p>
           </div>
         </div>
       )}

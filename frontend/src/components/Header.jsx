@@ -2,7 +2,6 @@ import React, { useContext, useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { UserContext } from "../context/UserContext";
 import { useCart } from "../context/CartContext";
-import { Bell } from "lucide-react";
 import CartButton from "./CartButton";
 import axios from "axios";
 import { API_BASE_URL } from "../config";

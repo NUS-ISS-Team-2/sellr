@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 
 export default function BellButton({ count = 0, to = "/manageorders" }) {
   return (
-    <Link to={to} className="relative inline-block">
+    <Link to={to} className="relative inline-block group">
       <button className="p-2 rounded-full hover:bg-blue-700 transition relative">
         {/* Simple Bell SVG */}
         <svg
@@ -27,6 +27,13 @@ export default function BellButton({ count = 0, to = "/manageorders" }) {
           </span>
         )}
       </button>
+
+      {/* Tooltip */}
+      {count > 0 && (
+        <span className="absolute left-1/2 -translate-x-1/2 -bottom-8 w-48 bg-gray-800 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity text-center z-50">
+          You have outstanding orders to be fulfilled
+        </span>
+      )}
     </Link>
   );
 }

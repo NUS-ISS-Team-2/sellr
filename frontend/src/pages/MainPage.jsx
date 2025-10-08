@@ -77,11 +77,6 @@ export default function MainPage() {
             <h3 className="text-2xl font-bold">All Products</h3>
           </div>
         )}
-        {(role === "SELLER") && (
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="text-2xl font-bold"></h3>
-          </div>
-        )}
 
 
         {/* Modal: Create/Edit */}
