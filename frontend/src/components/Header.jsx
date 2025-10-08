@@ -2,16 +2,48 @@ import React, { useContext, useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { UserContext } from "../context/UserContext";
 import { useCart } from "../context/CartContext";
+import { Bell } from "lucide-react";
 import CartButton from "./CartButton";
+import axios from "axios";
+import { API_BASE_URL } from "../config";
+import BellButton from "./BellButton";
 
 export default function Header() {
-  const { username, logout, role } = useContext(UserContext);
-  const [openDropdown, setOpenDropdown] = useState(null); // "USER", "SELLER", or null
-  const wrapperRef = useRef(null); // Ref for detecting outside clicks
+  const { username, logout, role, userId } = useContext(UserContext);
+  const [openDropdown, setOpenDropdown] = useState(null);
+  const [outstandingOrders, setOutstandingOrders] = useState(0);
+  const wrapperRef = useRef(null);
   const navigate = useNavigate();
   const { clearCart } = useCart();
 
-  // Close dropdowns when clicking outside
+  // 🧠 Fetch outstanding orders for seller/admin
+  useEffect(() => {
+    const fetchOutstandingOrders = async () => {
+      if ((role === "SELLER" || role === "ADMIN") && userId) {
+        try {
+          const res = await axios.get(`${API_BASE_URL}/orders/seller`, {
+            params: { sellerId: userId },
+          });
+
+          const orders = res.data || [];
+          const count = orders.reduce((acc, order) => {
+            const pendingItems = order.items?.filter(
+              (item) => item.sellerId === userId && item.status === "PENDING"
+            ).length;
+            return acc + (pendingItems || 0);
+          }, 0);
+
+          setOutstandingOrders(count);
+        } catch (err) {
+          console.error("Failed to fetch outstanding orders:", err);
+        }
+      }
+    };
+
+    fetchOutstandingOrders();
+  }, [role, userId]);
+
+  // 🧱 Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (wrapperRef.current && !wrapperRef.current.contains(event.target)) {
@@ -51,6 +83,7 @@ export default function Header() {
   return (
     <header className="bg-blue-600 text-white">
       <div className="container mx-auto flex items-center justify-between px-6 py-4">
+        {/* Logo */}
         <h1 className="text-2xl font-bold">
           <Link to="/">sellr</Link>
         </h1>
@@ -62,6 +95,7 @@ export default function Header() {
               Shop
             </Link>
           </nav>
+
           {/* Admin Dropdown */}
           {role === "ADMIN" && (
             <div className="relative">
@@ -78,7 +112,7 @@ export default function Header() {
                 <div className="absolute right-0 top-full mt-2 w-40 bg-white text-black rounded shadow-lg z-10">
                   <button
                     onClick={() => {
-                      navigate("/users"); 
+                      navigate("/users");
                       setOpenDropdown(null);
                     }}
                     className="w-full text-left px-4 py-2 hover:bg-gray-200"
@@ -87,7 +121,7 @@ export default function Header() {
                   </button>
                   <button
                     onClick={() => {
-                      navigate("/product-management"); 
+                      navigate("/product-management");
                       setOpenDropdown(null);
                     }}
                     className="w-full text-left px-4 py-2 hover:bg-gray-200"
@@ -100,7 +134,7 @@ export default function Header() {
           )}
 
           {/* Seller Dropdown */}
-          {role === "SELLER" || role === "ADMIN" ? (
+          {(role === "SELLER" || role === "ADMIN") && (
             <div className="relative">
               <button
                 onClick={() =>
@@ -128,11 +162,12 @@ export default function Header() {
                 </div>
               )}
             </div>
-          ) : null}
+          )}
 
-          {/* User Dropdown + Cart */}
+          {/* User Dropdown + Notifications/Cart */}
           {username ? (
             <div className="flex items-center">
+              {/* User dropdown */}
               <div className="relative">
                 <button
                   onClick={() =>
@@ -167,9 +202,22 @@ export default function Header() {
                 )}
               </div>
 
-              <div className="ml-4">
-                <CartButton />
-              </div>
+              {/* 🔔 Bell for Seller/Admin */}
+              {(role === "SELLER" || role === "ADMIN") ? (
+                <div className="ml-4 relative">
+                  <button
+                    onClick={() => navigate("/manageorders")}
+                    className="relative p-2 hover:bg-blue-700 rounded-full transition"
+                    title="View Orders"
+                  >
+                    <BellButton count={outstandingOrders} to="/manageorders" />
+                  </button>
+                </div>
+              ) : (
+                <div className="ml-4">
+                  <CartButton />
+                </div>
+              )}
             </div>
           ) : (
             <div className="flex space-x-4">
