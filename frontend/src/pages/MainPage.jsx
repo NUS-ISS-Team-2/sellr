@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from "react";
+import React, { useEffect, useState, useContext, useCallback } from "react";
 import axios from "axios";
 import Hero from "../components/Hero";
 import ProductCard from "../components/ProductCard";
@@ -20,26 +20,24 @@ export default function MainPage() {
   const [confirmDelete, setConfirmDelete] = useState(null);
   const { role, userId } = useContext(UserContext);
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        let url = `${API_BASE_URL}/products`;
-        console.log(API_BASE_URL)
+  const fetchProducts = useCallback(async () => {
+    try {
+      let url = `${API_BASE_URL}/products`;
 
-        if (role === "SELLER") {
-          // Fetch only this seller's products
-          url += `/my-products?sellerId=${userId}`;
-        }
-
-        const res = await axios.get(url);
-        setProducts(res.data);
-      } catch (err) {
-        console.error("Error fetching products:", err);
+      if (role === "SELLER") {
+        url += `/my-products?sellerId=${userId}`;
       }
-    };
 
+      const res = await axios.get(url);
+      setProducts(res.data);
+    } catch (err) {
+      console.error("Error fetching products:", err);
+    }
+  }, [role, userId]); // <-- dependencies
+
+  useEffect(() => {
     fetchProducts();
-  }, [role, userId]);
+  }, [fetchProducts]);
 
   // After create/update
   const handleProductAdded = (newProduct) => {
@@ -51,6 +49,7 @@ export default function MainPage() {
     });
     setShowForm(false);
     setEditingProduct(null);
+    fetchProducts();
   };
 
   // Delete confirmed
@@ -119,7 +118,7 @@ export default function MainPage() {
         {role === "SELLER" || role === "ADMIN" ? (
           <div className="space-y-8 mt-6">
             {/* 🧭 Seller Dashboard summary */}
-            <SellerDashboard />
+            <SellerDashboard products={products} />
 
             {/* 🛍️ Seller's product grid */}
             <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">

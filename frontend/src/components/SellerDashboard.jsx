@@ -3,59 +3,49 @@ import axios from "axios";
 import { UserContext } from "../context/UserContext";
 import { API_BASE_URL } from "../config";
 
-export default function SellerDashboard() {
+export default function SellerDashboard({ products }) {
   const { userId, role } = useContext(UserContext);
   const [loading, setLoading] = useState(true);
   const [outstandingOrders, setOutstandingOrders] = useState(0);
-  const [lowStockCount, setLowStockCount] = useState(0);
 
   useEffect(() => {
     if (role !== "SELLER" || !userId) return;
 
-    const fetchDashboardData = async () => {
+    const fetchOutstandingOrders = async () => {
       setLoading(true);
       try {
-        // Fetch seller orders
         const ordersRes = await axios.get(`${API_BASE_URL}/orders/seller`, {
           params: { sellerId: userId },
         });
 
         const orders = ordersRes.data || [];
 
-        // Count outstanding order items (PENDING)
         const outstandingCount = orders.reduce((count, order) => {
           const pendingItems = order.items?.filter(
             (item) => item.sellerId === userId && item.status === "PENDING"
           ).length;
           return count + (pendingItems || 0);
         }, 0);
+
         setOutstandingOrders(outstandingCount);
-
-        // Fetch seller products
-        const productsRes = await axios.get(
-          `${API_BASE_URL}/products/my-products?sellerId=${userId}`
-        );
-        const products = productsRes.data || [];
-
-        const lowStock = products.filter((p) => p.stock < 10).length;
-        setLowStockCount(lowStock);
       } catch (err) {
-        console.error("Failed to load seller dashboard:", err);
+        console.error("Failed to load outstanding orders:", err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchDashboardData();
+    fetchOutstandingOrders();
   }, [role, userId]);
 
   if (role !== "SELLER") return null;
 
+  // Compute low stock directly from products prop
+  const lowStockCount = products?.filter((p) => p.stock < 10).length || 0;
+
   return (
     <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-6">
-      <h2 className="text-2xl font-bold mb-6 text-gray-800">
-        Your Summary
-      </h2>
+      <h2 className="text-2xl font-bold mb-6 text-gray-800">Your Summary</h2>
 
       {loading ? (
         <div className="flex justify-center py-10">

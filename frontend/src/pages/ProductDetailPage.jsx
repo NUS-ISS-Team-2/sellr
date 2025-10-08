@@ -22,13 +22,14 @@ const PLACEHOLDER_IMG =
 export default function ProductDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { userId } = useContext(UserContext);
+  const { userId, role } = useContext(UserContext);
   const { cartItems, addToCart, updateCart } = useCart();
 
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [related, setRelated] = useState([]);
+  const isStaff = role === "SELLER" || role === "ADMIN";
 
   async function handleAddToWishlist() {
     try {
@@ -39,6 +40,8 @@ export default function ProductDetailPage() {
       alert("Item already in wishlist.");
     }
   }
+
+
 
   useEffect(() => {
     let ignore = false;
@@ -101,6 +104,12 @@ export default function ProductDetailPage() {
             <span className="text-gray-700">{loading ? "…" : (product?.name ?? "Product")}</span>
           </nav>
         </div>
+
+        {(role === "SELLER" || role === "ADMIN") && (
+          <div className="bg-yellow-100 border border-yellow-300 text-yellow-800 text-center py-2 rounded-md mx-3 mt-3 mb-10">
+            Sellers and administrators do not have purchasing permissions.
+          </div>
+        )}
 
         {/* Error */}
         {error && (
@@ -168,8 +177,8 @@ export default function ProductDetailPage() {
                         if (!userId) return navigate("/login");
                         addToCart(userId, product);
                       }}
-                      disabled={!inStock}
-                      className={`w-full py-2 rounded text-white ${inStock ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-400 cursor-not-allowed"
+                      disabled={!inStock || isStaff}
+                      className={`w-full py-2 rounded text-white ${!inStock || isStaff ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
                         }`}
                     >
                       Add to Cart
@@ -183,8 +192,8 @@ export default function ProductDetailPage() {
                         }}
                         disabled={!inStock || quantity >= product.stock}
                         className={`px-2 py-1 rounded text-white ${inStock && quantity < product.stock
-                            ? "bg-green-500 hover:bg-green-600"
-                            : "bg-gray-400 cursor-not-allowed"
+                          ? "bg-green-500 hover:bg-green-600"
+                          : "bg-gray-400 cursor-not-allowed"
                           }`}
                       >
                         +
@@ -206,8 +215,12 @@ export default function ProductDetailPage() {
 
                   <button
                     type="button"
-                    className="w-full inline-flex items-center justify-center gap-2 rounded-lg border border-rose-300 bg-white py-2 font-medium text-rose-600 hover:bg-rose-50 transition"
-                    onClick={handleAddToWishlist}
+                    className={`w-full inline-flex items-center justify-center gap-2 rounded-lg border border-rose-300 py-2 font-medium transition
+                      ${isStaff
+                        ? "bg-gray-400 cursor-not-allowed text-white border-gray-300"
+                        : "bg-white text-rose-600 hover:bg-rose-50"
+                      }`} onClick={handleAddToWishlist}
+                    disabled={isStaff}
                     aria-label="Add to wishlist"
                   >
                     <svg
@@ -228,18 +241,18 @@ export default function ProductDetailPage() {
                   </button>
                 </div>
 
-              {/* Related Links */}
-              <div className="mt-4 flex gap-2">
-                <Link to="/products" className="text-blue-600 hover:underline">Continue Shopping</Link>
-                {product?.category && (
-                  <Link
-                    to={`/products?category=${encodeURIComponent(product.category)}`}
-                    className="text-blue-600 hover:underline"
-                  >
-                    More in {product.category}
-                  </Link>
-                )}
-              </div>
+                {/* Related Links */}
+                <div className="mt-4 flex gap-2">
+                  <Link to="/products" className="text-blue-600 hover:underline">Continue Shopping</Link>
+                  {product?.category && (
+                    <Link
+                      to={`/products?category=${encodeURIComponent(product.category)}`}
+                      className="text-blue-600 hover:underline"
+                    >
+                      More in {product.category}
+                    </Link>
+                  )}
+                </div>
               </>
             )}
           </div>
