@@ -9,7 +9,7 @@ const BASE_URL = API_BASE_URL;
  */
 export async function fetchWishlist(userId, { signal } = {}) {
   if (!userId) throw new Error("fetchWishlist: userId is required");
-  const res = await axios.get(`${BASE_URL}/api/wishlist/getWishlist`, {
+  const res = await axios.get(`${BASE_URL}/wishlist/getWishlist`, {
     params: { userId },
     signal,
   });
@@ -31,7 +31,7 @@ export async function addToWishlist(userId, productId, opts = {}) {
   if (!productId) throw new Error("addToWishlist: productId is required");
 
   const res = await axios.post(
-    `${BASE_URL}/api/wishlist/add`,
+    `${BASE_URL}/wishlist/add`,
     { userId, productId },
     { signal: opts.signal }
   );
@@ -44,7 +44,7 @@ export async function removeWishlistItem(userId, productId, opts = {}) {
   if (!productId) throw new Error("removeWishlistItem: productId is required");
 
   const res = await axios.delete(
-    `${BASE_URL}/api/wishlist/items/${encodeURIComponent(productId)}`,
+    `${BASE_URL}/wishlist/items/${encodeURIComponent(productId)}`,
     {
       params: { userId },           // <-- query string ?userId=...
       signal: opts.signal,

@@ -18,6 +18,7 @@ import WishlistPage from "./pages/WishlistPage";
 import UsersPage from "./pages/UserPage";
 import AddProductReviewPage from "./pages/AddProductReviewPage";
 import ContactUsPage from "./pages/ContactUsPage";
+import LogoutPage from "./pages/LogoutPage";
 
 export default function App() {
   return (
@@ -40,6 +41,7 @@ export default function App() {
           <Route path="/users" element={<UsersPage />} />
           <Route path="/products/:id/review" element={<AddProductReviewPage />} />
           <Route path="/contact" element={<ContactUsPage />} />
+          <Route path="/success-logout" element={<LogoutPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Router>

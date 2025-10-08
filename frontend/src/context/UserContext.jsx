@@ -37,7 +37,7 @@ export function ContextProvider({ children }) {
     setUsername(null);
     setUserId(null);
     sessionStorage.clear();
-    if (navigate) navigate("/"); 
+    if (navigate) navigate("/success-logout"); 
   };
 
   return (
