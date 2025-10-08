@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from "react";
+import React, { useEffect, useState, useContext, useCallback } from "react";
 import axios from "axios";
 import Hero from "../components/Hero";
 import ProductCard from "../components/ProductCard";
@@ -10,6 +10,7 @@ import ConfirmDeleteModal from "../components/ConfirmDeleteModal";
 import { UserContext } from "../context/UserContext";
 import ProductSlider from "../components/ProductSlider";
 import { API_BASE_URL } from "../config";
+import SellerDashboard from "../components/SellerDashboard";
 
 export default function MainPage() {
   const [products, setProducts] = useState([]);
@@ -19,26 +20,24 @@ export default function MainPage() {
   const [confirmDelete, setConfirmDelete] = useState(null);
   const { role, userId } = useContext(UserContext);
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        let url = `${API_BASE_URL}/products`;
-        console.log(API_BASE_URL)
+  const fetchProducts = useCallback(async () => {
+    try {
+      let url = `${API_BASE_URL}/products`;
 
-        if (role === "SELLER") {
-          // Fetch only this seller's products
-          url += `/my-products?sellerId=${userId}`;
-        }
-
-        const res = await axios.get(url);
-        setProducts(res.data);
-      } catch (err) {
-        console.error("Error fetching products:", err);
+      if (role === "SELLER") {
+        url += `/my-products?sellerId=${userId}`;
       }
-    };
 
+      const res = await axios.get(url);
+      setProducts(res.data);
+    } catch (err) {
+      console.error("Error fetching products:", err);
+    }
+  }, [role, userId]); // <-- dependencies
+
+  useEffect(() => {
     fetchProducts();
-  }, [role, userId]);
+  }, [fetchProducts]);
 
   // After create/update
   const handleProductAdded = (newProduct) => {
@@ -50,6 +49,7 @@ export default function MainPage() {
     });
     setShowForm(false);
     setEditingProduct(null);
+    fetchProducts();
   };
 
   // Delete confirmed
@@ -71,9 +71,9 @@ export default function MainPage() {
       <Hero />
 
       <main className="flex-1 container mx-auto px-6 py-10">
-        {(role === "SELLER" || role === "ADMIN") && (
+        {(role === "ADMIN") && (
           <div className="flex justify-between items-center mb-6">
-            <h3 className="text-2xl font-bold">Your Products</h3>
+            <h3 className="text-2xl font-bold">All Products</h3>
           </div>
         )}
 
@@ -116,28 +116,34 @@ export default function MainPage() {
         />
 
         {role === "SELLER" || role === "ADMIN" ? (
-          // Seller view: grid with ProductCard + actions
-          <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mt-6">
-            {products.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                onView={setViewingProduct}
-                onEdit={(p) => {
-                  setEditingProduct(p);
-                  setShowForm(true);
-                }}
-                onDelete={(id) => {
-                  const prod = products.find((p) => p.id === id);
-                  setConfirmDelete(prod); // open modal instead of window.confirm
-                }}
-              />
-            ))}
+          <div className="space-y-8 mt-6">
+            {/* 🧭 Seller Dashboard summary */}
+            <SellerDashboard products={products} />
+
+            {/* 🛍️ Seller's product grid */}
+            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+              {products.map((product) => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  onView={setViewingProduct}
+                  onEdit={(p) => {
+                    setEditingProduct(p);
+                    setShowForm(true);
+                  }}
+                  onDelete={(id) => {
+                    const prod = products.find((p) => p.id === id);
+                    setConfirmDelete(prod);
+                  }}
+                />
+              ))}
+            </div>
           </div>
         ) : (
-          // Buyer view: product slider
+          // 🛒 Buyer view
           <ProductSlider products={products} />
         )}
+
 
       </main>
 
