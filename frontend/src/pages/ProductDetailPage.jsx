@@ -216,7 +216,7 @@ export default function ProductDetailPage() {
                   <button
                     type="button"
                     className={`w-full inline-flex items-center justify-center gap-2 rounded-lg border border-rose-300 py-2 font-medium transition
-  ${isStaff
+                      ${isStaff
                         ? "bg-gray-400 cursor-not-allowed text-white border-gray-300"
                         : "bg-white text-rose-600 hover:bg-rose-50"
                       }`} onClick={handleAddToWishlist}
