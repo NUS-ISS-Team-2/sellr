@@ -76,4 +76,22 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
+
+    @PutMapping("/{userId}/disable")
+    public ResponseEntity<?> disableUser(@PathVariable String userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        user.setDisabled(true);
+        userRepository.save(user);
+        return ResponseEntity.ok("User disabled");
+    }
+
+    @PutMapping("/{userId}/enable")
+    public ResponseEntity<?> enableUser(@PathVariable String userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        user.setDisabled(false);
+        userRepository.save(user);
+        return ResponseEntity.ok("User enabled");
+    }
 }
