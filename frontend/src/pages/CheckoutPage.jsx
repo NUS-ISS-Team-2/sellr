@@ -25,7 +25,7 @@ export default function CheckoutPage() {
         subtotal,
       });
       clearCart();
-      navigate("/orderCreated", { state: { orderId: res.data.orderId } });
+      navigate("/order-created", { state: { orderId: res.data.orderId } });
     } catch (err) {
       console.error("Error placing order:", err);
       alert("Order failed. Please try again.");
