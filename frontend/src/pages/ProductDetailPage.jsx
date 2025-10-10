@@ -5,8 +5,9 @@ import Header from "../components/Header";
 import { UserContext } from "../context/UserContext";
 import { useCart } from "../context/CartContext";
 import { getProductById, getRelatedProducts } from "../services/productService";
-import { addToWishlist } from "../services/wishlistService";
+import { addToWishlist, fetchWishlist } from "../services/wishlistService";
 import ProductReviews from "../components/ProductReviews";
+import Toast from "../components/Toast";
 
 
 const PLACEHOLDER_IMG =
@@ -29,19 +30,20 @@ export default function ProductDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [related, setRelated] = useState([]);
+  const [inWishlist, setInWishlist] = useState(false);
   const isStaff = role === "SELLER" || role === "ADMIN";
+  const [toast, setToast] = useState(null);
 
   async function handleAddToWishlist() {
     try {
       await addToWishlist(userId, product.id);
-      alert("Added to wishlist!");
+      setInWishlist(true); // mark as added
+      setToast({ type: "success", message: "Added to wishlist!" });
     } catch (e) {
       console.error(e);
-      alert("Item already in wishlist.");
+      setToast({ type: "error", message: "Item already in wishlist." });
     }
   }
-
-
 
   useEffect(() => {
     let ignore = false;
@@ -68,6 +70,23 @@ export default function ProductDetailPage() {
     load();
     return () => { ignore = true; };
   }, [id]);
+
+  useEffect(() => {
+    if (!userId || !product) return;
+    let ignore = false;
+    async function checkWishlist() {
+      try {
+        const wishlist = await fetchWishlist(userId);
+        if (ignore) return;
+        const exists = wishlist.items.some(item => item.productId === product.id);
+        setInWishlist(exists);
+      } catch (e) {
+        console.error("Failed to fetch wishlist:", e);
+      }
+    }
+    checkWishlist();
+    return () => { ignore = true; };
+  }, [userId, product]);
 
   const cartItem = cartItems.find((item) => item.productId === product?.id);
   const quantity = cartItem?.quantity || 0;
@@ -100,6 +119,7 @@ export default function ProductDetailPage() {
                 </Link>
               </>
             )}
+
             <span className="mx-1">/</span>
             <span className="text-gray-700">{loading ? "…" : (product?.name ?? "Product")}</span>
           </nav>
@@ -109,6 +129,15 @@ export default function ProductDetailPage() {
           <div className="bg-yellow-100 border border-yellow-300 text-yellow-800 text-center py-2 rounded-md mx-3 mt-3 mb-10">
             Sellers and administrators do not have purchasing permissions.
           </div>
+        )}
+
+        {toast && (
+          <Toast
+            type={toast.type}
+            message={toast.message}
+            onClose={() => setToast(null)}
+            duration={5000}
+          />
         )}
 
         {/* Error */}
@@ -216,12 +245,13 @@ export default function ProductDetailPage() {
                   <button
                     type="button"
                     className={`w-full inline-flex items-center justify-center gap-2 rounded-lg border border-rose-300 py-2 font-medium transition
-                      ${isStaff
+                      ${isStaff || inWishlist
                         ? "bg-gray-400 cursor-not-allowed text-white border-gray-300"
                         : "bg-white text-rose-600 hover:bg-rose-50"
-                      }`} onClick={handleAddToWishlist}
-                    disabled={isStaff}
-                    aria-label="Add to wishlist"
+                      }`}
+                    onClick={handleAddToWishlist}
+                    disabled={isStaff || inWishlist || !userId}
+                    aria-label={inWishlist ? "In wishlist" : "Add to wishlist"}
                   >
                     <svg
                       className="h-5 w-5"
@@ -237,8 +267,9 @@ export default function ProductDetailPage() {
                         strokeLinejoin="round"
                       />
                     </svg>
-                    Add to Wishlist
+                    {inWishlist ? "In Wishlist" : "Add to Wishlist"}
                   </button>
+
                 </div>
 
                 {/* Related Links */}

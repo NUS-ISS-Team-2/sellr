@@ -18,6 +18,8 @@ import WishlistPage from "./pages/WishlistPage";
 import UsersPage from "./pages/UserPage";
 import AddProductReviewPage from "./pages/AddProductReviewPage";
 import ContactUsPage from "./pages/ContactUsPage";
+import LogoutPage from "./pages/LogoutPage";
+import ProtectedRoute from "./context/ProtectedRoutes";
 
 export default function App() {
   return (
@@ -25,21 +27,65 @@ export default function App() {
       <CartProvider>
       <Router basename="/">
         <Routes>
-          <Route path="/product-management" element={<ProductManagementPage />} />
           <Route path="/" element={<MainPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/products" element={<ProductsPage />} />
           <Route path="/cart" element={<CartPage />} />
           <Route path="/products/:id" element={<ProductDetailPage />} />
-          <Route path="/orderCreated" element={<OrderCreatedPage/>} />
-          <Route path="/myorders" element={<OrdersPage/>} />
           <Route path="/checkout" element={<CheckoutPage />} />
-          <Route path="/manageorders" element={<OrderManagementPage />} />
           <Route path="/wishlist" element={<WishlistPage />} />
-          <Route path="/users" element={<UsersPage />} />
           <Route path="/products/:id/review" element={<AddProductReviewPage />} />
           <Route path="/contact" element={<ContactUsPage />} />
+          <Route path="/success-logout" element={<LogoutPage />} />
+
+
+          <Route
+            path="/product-management"
+            element={
+              <ProtectedRoute allowedRoles={["SELLER", "ADMIN"]}>
+                <ProductManagementPage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/users"
+            element={
+              <ProtectedRoute allowedRoles={["ADMIN"]}>
+                <UsersPage />
+              </ProtectedRoute>
+            }
+          />
+          
+          <Route
+            path="/manageorders"
+            element={
+              <ProtectedRoute allowedRoles={["SELLER", "ADMIN"]}>
+                <OrderManagementPage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/order-created"
+            element={
+              <ProtectedRoute allowedRoles={["BUYER"]}>
+                <OrderCreatedPage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/myorders"
+            element={
+              <ProtectedRoute allowedRoles={["BUYER"]}>
+                <OrdersPage />
+              </ProtectedRoute>
+            }
+          />
+
+
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Router>

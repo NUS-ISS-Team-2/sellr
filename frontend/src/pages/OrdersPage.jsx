@@ -91,7 +91,7 @@ export default function OrdersPage() {
                                     </p>
                                 </div>
                                 <Link
-                                    to={`/orderCreated/`}
+                                    to={`/order-created/`}
                                     state={{ orderId: order.orderId }}
                                     className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
                                 >

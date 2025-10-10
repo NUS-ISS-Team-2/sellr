@@ -16,7 +16,7 @@ import java.util.Optional;
 public class UserRepositoryImpl {
 
     @Autowired
-    private MongoTemplate mongoTemplate;
+    MongoTemplate mongoTemplate;
 
     public Optional<User> findByIdentifierAcrossCollections(String identifier) {
         if (identifier == null || identifier.isBlank()) {
