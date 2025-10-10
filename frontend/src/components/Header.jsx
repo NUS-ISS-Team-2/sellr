@@ -133,7 +133,7 @@ export default function Header() {
           )}
 
           {/* Seller Dropdown */}
-          {(role === "SELLER" || role === "ADMIN") && (
+          {(role === "SELLER") && (
             <div className="relative">
               <button
                 onClick={() =>
