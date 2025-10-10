@@ -13,7 +13,6 @@ import com.nus.sellr.product.entity.Product;
 import com.nus.sellr.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import com.nus.sellr.order.entity.PaymentDetails;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -122,22 +121,6 @@ public class OrderService {
                 })
                 .collect(Collectors.toList());
     }
-
-
-//    public void updateOrderItemStatus(UpdateOrderItemStatusDTO updateDTO) {
-//        Order order = orderRepository.findById(updateDTO.getOrderId())
-//                .orElseThrow(() -> new RuntimeException("Order not found"));
-//
-//        order.getItems().stream()
-//                .filter(i -> i.getProductId().equals(updateDTO.getProductId()))
-//                .findFirst()
-//                .ifPresent(item -> {
-//                    item.setStatus(updateDTO.getStatus());
-//                    item.setDeliveryDate(updateDTO.getDeliveryDate());
-//                });
-//
-//        orderRepository.save(order);
-//    }
 
     public void addReviewToOrderItem(AddReviewDTO reviewDTO) {
         Order order = orderRepository.findById(reviewDTO.getOrderId())
