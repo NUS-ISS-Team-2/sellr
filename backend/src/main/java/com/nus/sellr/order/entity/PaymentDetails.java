@@ -15,8 +15,6 @@ public class PaymentDetails {
     // For PayPal
     private String paypalEmail;
 
-    // For Bank Transfer
-    private String bankName;
-    private String accountNumber;
-    private String accountHolder;
+    // For PayNow
+    private String referenceNumber;
 }

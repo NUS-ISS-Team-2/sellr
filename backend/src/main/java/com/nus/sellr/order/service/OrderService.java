@@ -5,6 +5,8 @@ import com.nus.sellr.order.dto.*;
 import com.nus.sellr.order.entity.Order;
 import com.nus.sellr.order.entity.OrderItem;
 import com.nus.sellr.order.entity.OrderStatus;
+import com.nus.sellr.order.payment.PaymentStrategy;
+import com.nus.sellr.order.payment.PaymentStrategyFactory;
 import com.nus.sellr.order.repository.OrderRepository;
 import com.nus.sellr.product.dto.ProductResponse;
 import com.nus.sellr.product.entity.Product;
@@ -25,26 +27,12 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final CartService cartService;
     private final ProductService productService;
+    private final PaymentStrategyFactory paymentStrategyFactory;
 
     public OrderResponseDTO checkout(CheckoutRequestDTO request) {
-        // Payment verification
-        if ("Credit Card".equals(request.getPaymentMethod())) {
-            PaymentDetails pd = request.getPaymentDetails();
-            if (pd.getCardNumber() == null || pd.getCardName() == null
-                || pd.getExpiry() == null || pd.getCvv() == null) {
-                throw new RuntimeException("Invalid credit card details");
-            }
-        } else if ("PayPal".equals(request.getPaymentMethod())) {
-            if (request.getPaymentDetails().getPaypalEmail() == null) {
-                throw new RuntimeException("Invalid PayPal email");
-            }
-        } else if ("Bank Transfer".equals(request.getPaymentMethod())) {
-            PaymentDetails pd = request.getPaymentDetails();
-            if (pd.getBankName() == null || pd.getAccountNumber() == null
-                || pd.getAccountHolder() == null) {
-                throw new RuntimeException("Invalid bank transfer details");
-            }
-        }
+        PaymentStrategy paymentStrategy = paymentStrategyFactory.getStrategy(request.getPaymentMethod());
+        paymentStrategy.validate(request.getPaymentDetails());
+        paymentStrategy.processPayment(request.getPaymentDetails());
 
         Order order = new Order(request.getUserId());
         order.setItems(request.getItems().stream()

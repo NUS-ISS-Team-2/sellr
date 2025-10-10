@@ -6,6 +6,8 @@ import com.nus.sellr.order.entity.Order;
 import com.nus.sellr.order.entity.OrderItem;
 import com.nus.sellr.order.entity.OrderStatus;
 import com.nus.sellr.order.entity.PaymentDetails;
+import com.nus.sellr.order.payment.PaymentStrategy;
+import com.nus.sellr.order.payment.PaymentStrategyFactory;
 import com.nus.sellr.order.repository.OrderRepository;
 import com.nus.sellr.product.dto.ProductResponse;
 import com.nus.sellr.product.entity.Product;
@@ -34,12 +36,25 @@ class OrderServiceTest {
     @Mock
     private ProductService productService;
 
+    @Mock
+    private PaymentStrategyFactory paymentStrategyFactory;
+
+    @Mock
+    private PaymentStrategy paymentStrategy;
+
     @InjectMocks
-    private OrderService orderService;
+    private OrderService orderService; // Injects all mocks into constructor
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+
+        // Make the factory return the mock payment strategy
+        when(paymentStrategyFactory.getStrategy(anyString())).thenReturn(paymentStrategy);
+
+        // Mock the strategy behavior
+        doNothing().when(paymentStrategy).validate(any());
+        doNothing().when(paymentStrategy).processPayment(any());
     }
 
     @Test
@@ -66,9 +81,18 @@ class OrderServiceTest {
         CheckoutRequestDTO request = createCheckoutRequest("Credit Card");
         request.setPaymentDetails(new PaymentDetails()); // missing card details
 
-        RuntimeException ex = assertThrows(RuntimeException.class, () -> orderService.checkout(request));
+        // Mock factory to return the mock paymentStrategy
+        when(paymentStrategyFactory.getStrategy("Credit Card")).thenReturn(paymentStrategy);
+
+        // Mock strategy to throw exception on invalid details
+        doThrow(new RuntimeException("Invalid credit card details"))
+                .when(paymentStrategy).validate(any(PaymentDetails.class));
+
+        RuntimeException ex = assertThrows(RuntimeException.class,
+                () -> orderService.checkout(request));
         assertEquals("Invalid credit card details", ex.getMessage());
     }
+
 
     // ----------------- PayPal -----------------
     @Test
@@ -90,18 +114,26 @@ class OrderServiceTest {
         CheckoutRequestDTO request = createCheckoutRequest("PayPal");
         request.setPaymentDetails(new PaymentDetails()); // missing PayPal email
 
-        RuntimeException ex = assertThrows(RuntimeException.class, () -> orderService.checkout(request));
+        // Mock factory to return the mock paymentStrategy
+        when(paymentStrategyFactory.getStrategy("PayPal")).thenReturn(paymentStrategy);
+
+        // Mock strategy to throw exception on invalid details
+        doThrow(new RuntimeException("Invalid PayPal email"))
+                .when(paymentStrategy).validate(any(PaymentDetails.class));
+
+        RuntimeException ex = assertThrows(RuntimeException.class,
+                () -> orderService.checkout(request));
+
         assertEquals("Invalid PayPal email", ex.getMessage());
     }
+
 
     // ----------------- Bank Transfer -----------------
     @Test
     void testCheckout_withBankTransfer_success() {
-        CheckoutRequestDTO request = createCheckoutRequest("Bank Transfer");
+        CheckoutRequestDTO request = createCheckoutRequest("PayNow");
         PaymentDetails pd = new PaymentDetails();
-        pd.setBankName("DBS");
-        pd.setAccountNumber("123456");
-        pd.setAccountHolder("John Doe");
+        pd.setReferenceNumber("123456");
         request.setPaymentDetails(pd);
 
         mockSaveAndProduct();
@@ -117,9 +149,18 @@ class OrderServiceTest {
         CheckoutRequestDTO request = createCheckoutRequest("Bank Transfer");
         request.setPaymentDetails(new PaymentDetails()); // missing bank details
 
-        RuntimeException ex = assertThrows(RuntimeException.class, () -> orderService.checkout(request));
+        // Mock factory to return the mock paymentStrategy
+        when(paymentStrategyFactory.getStrategy("Bank Transfer")).thenReturn(paymentStrategy);
+
+        // Mock strategy to throw exception on invalid details
+        doThrow(new RuntimeException("Invalid bank transfer details"))
+                .when(paymentStrategy).validate(any(PaymentDetails.class));
+
+        RuntimeException ex = assertThrows(RuntimeException.class,
+                () -> orderService.checkout(request));
         assertEquals("Invalid bank transfer details", ex.getMessage());
     }
+
 
     // ----------------- Helper Methods -----------------
     private CheckoutRequestDTO createCheckoutRequest(String method) {
