@@ -23,7 +23,7 @@ public abstract class User {
     @NotBlank(message = "Email is required")
     private String email;
     private String password;  // store hashed passwords only!
-
+    private boolean disabled = false;
     // Constructors
     public User() {}
 

@@ -5,6 +5,8 @@ import com.nus.sellr.product.dto.ProductResponse;
 import com.nus.sellr.product.entity.Product;
 import com.nus.sellr.product.mapper.ProductMapper;
 import com.nus.sellr.product.repository.ProductRepository;
+import com.nus.sellr.user.entity.Seller;
+import com.nus.sellr.user.repository.SellerRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -35,6 +37,9 @@ class ProductServiceTest {
 
     @InjectMocks
     private ProductService productService;
+
+    @Mock
+    private SellerRepository sellerRepository;
 
     @BeforeEach
     void setUp() {
@@ -84,18 +89,35 @@ class ProductServiceTest {
 
     @Test
     void testGetProductById_found() {
+        // Arrange
         Product product = new Product();
         product.setId("prod1");
+        product.setSellerId("seller1"); // must set sellerId
+
         ProductResponse response = new ProductResponse();
         response.setId("prod1");
 
         when(productRepository.findById("prod1")).thenReturn(Optional.of(product));
         when(productMapper.toResponse(product)).thenReturn(response);
 
+        // Mock sellerRepository
+        Seller seller = new Seller();
+        seller.setId("seller1");
+        seller.setUsername("SellerName");
+
+        when(sellerRepository.findById("seller1")).thenReturn(Optional.of(seller));
+
+        // Act
         ProductResponse result = productService.getProductById("prod1");
 
+        // Assert
         assertEquals("prod1", result.getId());
+        assertEquals("SellerName", result.getSellerName()); // now the sellerName is attached
+        verify(productRepository, times(1)).findById("prod1");
+        verify(productMapper, times(1)).toResponse(product);
+        verify(sellerRepository, times(1)).findById("seller1");
     }
+
 
     @Test
     void testGetProductById_notFound() {

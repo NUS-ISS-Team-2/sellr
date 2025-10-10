@@ -116,7 +116,7 @@ export default function Header() {
                     }}
                     className="w-full text-left px-4 py-2 hover:bg-gray-200"
                   >
-                    View All Users
+                    All Users
                   </button>
                   <button
                     onClick={() => {
@@ -125,7 +125,16 @@ export default function Header() {
                     }}
                     className="w-full text-left px-4 py-2 hover:bg-gray-200"
                   >
-                    View All Products
+                    All Products
+                  </button>
+                  <button
+                    onClick={() => {
+                      navigate("/manageorders");
+                      setOpenDropdown(null);
+                    }}
+                    className="w-full text-left px-4 py-2 hover:bg-gray-200"
+                  >
+                    All Orders
                   </button>
                 </div>
               )}

@@ -11,6 +11,8 @@ import com.nus.sellr.order.repository.OrderRepository;
 import com.nus.sellr.product.dto.ProductResponse;
 import com.nus.sellr.product.entity.Product;
 import com.nus.sellr.product.service.ProductService;
+import com.nus.sellr.user.entity.Seller;
+import com.nus.sellr.user.repository.SellerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +29,7 @@ public class OrderService {
     private final CartService cartService;
     private final ProductService productService;
     private final PaymentStrategyFactory paymentStrategyFactory;
+    private final SellerRepository sellerRepository;
 
     public OrderResponseDTO checkout(CheckoutRequestDTO request) {
         PaymentStrategy paymentStrategy = paymentStrategyFactory.getStrategy(request.getPaymentMethod());
@@ -178,23 +181,20 @@ public class OrderService {
         dto.setReview(item.getReview());
         dto.setSellerId(item.getSellerId());
         dto.setPrice(item.getPrice());
+
+        Seller seller = sellerRepository.findById(item.getSellerId())
+                .orElse(null);
+        if (seller != null) {
+            dto.setSellerName(seller.getUsername());
+        }
+
+        dto.setDisputeRaised(item.isDisputeRaised());
+        dto.setDisputeReason(item.getDisputeReason());
+        dto.setDisputeDescription(item.getDisputeDescription());
+        dto.setDisputeRaisedAt(item.getDisputeRaisedAt());
+
         return dto;
     }
-
-//    private OrderItem createOrderItemFromCartItem(CartItemDTO cartItem) {
-//        OrderItem orderItem = new OrderItem();
-//        orderItem.setProductId(cartItem.getProductId());
-//        orderItem.setQuantity(cartItem.getQuantity());
-//        orderItem.setShippingFee(BigDecimal.valueOf(0));
-//        orderItem.setStatus(OrderStatus.PENDING);
-//        orderItem.setSellerId(cartItem.getSellerId());
-//        return orderItem;
-//    }
-//
-//    private BigDecimal getProductPriceFromItem(OrderItem item) {
-//        ProductResponse product = productService.getProductById(item.getProductId());
-//        return BigDecimal.valueOf(product.getPrice());
-//    }
 
     // Fetch all orders for a seller, only including their items
     public List<OrderResponseDTO> getOrdersForSeller(String sellerId) {
@@ -273,6 +273,53 @@ public class OrderService {
         orderRepository.save(order);
     }
 
+    public void raiseDispute(String orderId, String productId, String reason, String description) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
 
+        order.getItems().stream()
+                .filter(item -> item.getProductId().equals(productId))
+                .findFirst()
+                .ifPresent(item -> {
+                    if (item.getStatus() != OrderStatus.DELIVERED && item.getStatus() != OrderStatus.SHIPPED) {
+                        throw new RuntimeException("Dispute can only be raised for shipped or delivered items.");
+                    }
+                    item.setStatus(OrderStatus.DISPUTING);
+                    item.setDisputeRaised(true);
+                    item.setDisputeReason(reason);
+                    item.setDisputeDescription(description);
+                    item.setDisputeRaisedAt(LocalDateTime.now());
+                });
+
+        orderRepository.save(order);
+    }
+
+    public List<OrderResponseDTO> getAllOrders() {
+        return orderRepository.findAll()
+                .stream()
+                .map(this::toResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    public void resolveDispute(String orderId, String productId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        order.getItems().stream()
+                .filter(item -> item.getProductId().equals(productId))
+                .findFirst()
+                .ifPresent(item -> {
+                    if (item.getStatus() != OrderStatus.DISPUTING) {
+                        throw new RuntimeException("Item is not in dispute.");
+                    }
+                    item.setStatus(OrderStatus.RESOLVED); // or COMPLETED
+                    item.setDisputeRaised(false);
+                    item.setDisputeReason(null);
+                    item.setDisputeDescription(null);
+                    item.setDisputeRaisedAt(LocalDateTime.now());
+                });
+
+        orderRepository.save(order);
+    }
 
 }

@@ -179,6 +179,11 @@ export default function ProductDetailPage() {
             ) : (
               <>
                 <h1 className="text-3xl font-semibold">{product?.name}</h1>
+                {product?.sellerName && (
+                  <p className="text-gray-500 text-sm mt-1">
+                    Sold by: <span className="font-medium">{product.sellerName}</span>
+                  </p>
+                )}
                 <p className="text-gray-700 mt-3">{product?.description || "No description provided."}</p>
                 <p className="text-2xl font-bold mt-4">${Number(product?.price ?? 0).toLocaleString()}</p>
 
@@ -187,7 +192,7 @@ export default function ProductDetailPage() {
                 <div className="mt-2 flex items-center gap-2">
                   {inStock ? (
                     <span className="inline-block text-sm px-2 py-1 rounded-full bg-green-100 text-green-700">
-                      Stock: {product.lowStock && "⚠️ Low"}
+                      In Stock {product.lowStock && "⚠️ Low"}
                     </span>
                   ) : (
                     <span className="inline-block text-sm px-2 py-1 rounded-full bg-gray-100 text-gray-500">

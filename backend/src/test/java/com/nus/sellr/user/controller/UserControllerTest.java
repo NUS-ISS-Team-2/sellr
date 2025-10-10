@@ -72,8 +72,10 @@ class UserControllerTest {
     @Test
     void testGetAllUsers_returnsList() {
         List<UserResponse> mockUsers = Arrays.asList(
-                new UserResponse("u1", "Alice", "alice@example.com", Role.BUYER),
-                new UserResponse("u2", "Bob", "bob@example.com", Role.BUYER)
+                new UserResponse("u1", "Alice", "alice@example.com",
+                        Role.BUYER, false),
+                new UserResponse("u2", "Bob", "bob@example.com",
+                        Role.BUYER, false)
         );
 
         when(userService.getAllUsers()).thenReturn(mockUsers);
@@ -95,7 +97,8 @@ class UserControllerTest {
         dto.setUsername("AliceUpdated");
         dto.setEmail("alice.new@example.com");
 
-        UserResponse updated = new UserResponse(userId, "AliceUpdated", "alice.new@example.com", Role.ADMIN);
+        UserResponse updated = new UserResponse(userId, "AliceUpdated", "alice.new@example.com",
+                Role.ADMIN, false);
         when(userService.updateUser(userId, dto)).thenReturn(updated);
 
         ResponseEntity<UserResponse> response = userController.updateUser(userId, dto);

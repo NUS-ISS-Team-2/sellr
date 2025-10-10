@@ -3,6 +3,7 @@ package com.nus.sellr.order.controller;
 import com.nus.sellr.order.dto.*;
 import com.nus.sellr.order.service.OrderService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -36,12 +37,6 @@ public class OrderController {
         return ResponseEntity.ok(orders);
     }
 
-//    // 4. Update Order Item Status
-//    @PatchMapping("/item/status")
-//    public ResponseEntity<Void> updateOrderItemStatus(@RequestBody UpdateOrderItemStatusDTO updateDTO) {
-//        orderService.updateOrderItemStatus(updateDTO);
-//        return ResponseEntity.noContent().build();
-//    }
 
     // 5. Add Review to Order Item
     @PatchMapping("/item/review")
@@ -86,5 +81,48 @@ public class OrderController {
                 request.getProductId(),
                 request.getStatus()
         );
+    }
+
+    @PostMapping("/dispute")
+    public ResponseEntity<?> raiseDispute(@RequestBody DisputeRequestDTO request) {
+        try {
+            orderService.raiseDispute(
+                    request.getOrderId(),
+                    request.getProductId(),
+                    request.getReason(),
+                    request.getDescription()
+            );
+            return ResponseEntity.ok("Dispute raised successfully.");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An unexpected error occurred.");
+        }
+    }
+
+    @GetMapping
+    public ResponseEntity<List<OrderResponseDTO>> getAllOrders() {
+        List<OrderResponseDTO> orders = orderService.getAllOrders();
+
+        if (orders.isEmpty()) {
+            return ResponseEntity.noContent().build(); // 204 No Content
+        }
+
+        return ResponseEntity.ok(orders); // 200 OK with list
+    }
+
+    // PUT /api/orders/item/resolve
+    @PutMapping("/item/resolve")
+    public ResponseEntity<?> resolveDispute(@RequestBody ResolveDisputeDTO request) {
+        try {
+            orderService.resolveDispute(request.getOrderId(), request.getProductId());
+            return ResponseEntity.ok("Dispute resolved successfully.");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An unexpected error occurred.");
+        }
     }
 }
