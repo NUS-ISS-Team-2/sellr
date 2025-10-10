@@ -9,7 +9,7 @@ export default function SellerDashboard({ products }) {
   const [loading, setLoading] = useState(true);
   const [outstandingOrders, setOutstandingOrders] = useState(0);
   const [isTableOpen, setIsTableOpen] = useState(false);
-
+  const [disputedOrders, setDisputedOrders] = useState(0);
   useEffect(() => {
     if (role !== "SELLER" || !userId) return;
 
@@ -21,6 +21,8 @@ export default function SellerDashboard({ products }) {
         });
 
         const orders = ordersRes.data || [];
+
+        // Count pending shipments
         const outstandingCount = orders.reduce((count, order) => {
           const pendingItems = order.items?.filter(
             (item) => item.sellerId === userId && item.status === "PENDING"
@@ -28,7 +30,16 @@ export default function SellerDashboard({ products }) {
           return count + (pendingItems || 0);
         }, 0);
 
+        // Count disputed items
+        const disputedCount = orders.reduce((count, order) => {
+          const disputedItems = order.items?.filter(
+            (item) => item.sellerId === userId && item.status === "DISPUTED"
+          ).length;
+          return count + (disputedItems || 0);
+        }, 0);
+
         setOutstandingOrders(outstandingCount);
+        setDisputedOrders(disputedCount); // new state
       } catch (err) {
         console.error("Failed to load outstanding orders:", err);
       } finally {
@@ -38,6 +49,7 @@ export default function SellerDashboard({ products }) {
 
     fetchOutstandingOrders();
   }, [role, userId]);
+
 
   if (role !== "SELLER") return null;
 
@@ -53,7 +65,7 @@ export default function SellerDashboard({ products }) {
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
         </div>
       ) : (
-        <div className="grid sm:grid-cols-2 gap-6">
+        <div className="grid sm:grid-cols-3 gap-6">
           {/* Outstanding Orders */}
           <Link
             to="/manageorders"
@@ -63,9 +75,8 @@ export default function SellerDashboard({ products }) {
               Outstanding Orders
             </h3>
             <p
-              className={`text-3xl font-bold mt-2 ${
-                outstandingOrders > 0 ? "text-red-600" : "text-green-600"
-              }`}
+              className={`text-3xl font-bold mt-2 ${outstandingOrders > 0 ? "text-red-600" : "text-green-600"
+                }`}
             >
               {outstandingOrders}
             </p>
@@ -81,13 +92,27 @@ export default function SellerDashboard({ products }) {
               Low Stock Products
             </h3>
             <p
-              className={`text-3xl font-bold mt-2 ${
-                lowStockCount > 0 ? "text-yellow-500" : "text-green-600"
-              }`}
+              className={`text-3xl font-bold mt-2 ${lowStockCount > 0 ? "text-yellow-500" : "text-green-600"
+                }`}
             >
               {lowStockCount}
             </p>
             <p className="text-sm text-gray-500 mt-1">Stock below 10 units</p>
+          </Link>
+          <Link
+            to="/disputes"
+            className="block p-4 border rounded-lg text-center hover:bg-red-50 transition"
+          >
+            <h3 className="text-lg font-semibold text-gray-700">
+              Disputed Orders
+            </h3>
+            <p
+              className={`text-3xl font-bold mt-2 ${disputedOrders > 0 ? "text-red-600" : "text-green-600"
+                }`}
+            >
+              {disputedOrders}
+            </p>
+            <p className="text-sm text-gray-500 mt-1">Orders currently in dispute</p>
           </Link>
         </div>
       )}

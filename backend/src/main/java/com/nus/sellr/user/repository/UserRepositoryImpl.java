@@ -88,4 +88,15 @@ public class UserRepositoryImpl {
         return Optional.empty();
     }
 
+    public User save(User user) {
+        if (user instanceof Seller) {
+            return mongoTemplate.save(user, "sellers");
+        } else if (user instanceof Buyer) {
+            return mongoTemplate.save(user, "buyers");
+        } else if (user instanceof Admin) {
+            return mongoTemplate.save(user, "admins");
+        } else {
+            throw new RuntimeException("Unknown user type");
+        }
+    }
 }

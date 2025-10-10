@@ -1,6 +1,8 @@
 package com.nus.sellr.user.controller;
 
 import com.nus.sellr.user.dto.*;
+import com.nus.sellr.user.entity.User;
+import com.nus.sellr.user.repository.UserRepositoryImpl;
 import com.nus.sellr.user.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,9 +16,11 @@ import java.util.Map;
 public class UserController {
 
     private final UserService userService;
+    private final UserRepositoryImpl userRepository;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, UserRepositoryImpl userRepository) {
         this.userService = userService;
+        this.userRepository = userRepository;
     }
 
     @PostMapping
@@ -71,5 +75,23 @@ public class UserController {
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
+    }
+
+    @PutMapping("/{userId}/disable")
+    public ResponseEntity<?> disableUser(@PathVariable String userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        user.setDisabled(true);
+        userRepository.save(user);
+        return ResponseEntity.ok("User disabled");
+    }
+
+    @PutMapping("/{userId}/enable")
+    public ResponseEntity<?> enableUser(@PathVariable String userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        user.setDisabled(false);
+        userRepository.save(user);
+        return ResponseEntity.ok("User enabled");
     }
 }

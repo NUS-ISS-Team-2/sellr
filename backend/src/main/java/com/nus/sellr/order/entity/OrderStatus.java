@@ -5,7 +5,8 @@ public enum OrderStatus {
     PENDING,
     SHIPPED,
     DELIVERED,
-
+    DISPUTING,
+    RESOLVED,
     //for the entire order
     COMPLETED,
     INCOMPLETE
