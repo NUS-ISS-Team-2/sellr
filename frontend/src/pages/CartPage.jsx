@@ -19,7 +19,7 @@ export default function CartPage() {
     city: "",
     stateZipCountry: "",
   });
-  const [paymentMethod, setPaymentMethod] = useState("Credit Card");
+  const [paymentMethod, setPaymentMethod] = useState("PayNow");
   const [paymentDetails, setPaymentDetails] = useState({});
 
   if (!cartItems) {
@@ -102,10 +102,8 @@ export default function CartPage() {
         paymentDetails.expiry &&
         paymentDetails.cvv,
       PayPal: paymentDetails.paypalEmail,
-      "Bank Transfer":
-        paymentDetails.bankName &&
-        paymentDetails.accountNumber &&
-        paymentDetails.accountHolder,
+      "PayNow":
+        paymentDetails.referenceNumber
     };
 
     if (!validPayment[paymentMethod]) {

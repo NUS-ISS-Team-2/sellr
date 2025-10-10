@@ -26,7 +26,7 @@ public class AdminInitialiser {
                     PasswordUtil.hashPassword("admin")
             );
             adminRepository.save(admin);
-            System.out.println("Default admin account created: username=admin, password=admin");
+            System.out.println("Default admin account created");
         }
     }
 }
