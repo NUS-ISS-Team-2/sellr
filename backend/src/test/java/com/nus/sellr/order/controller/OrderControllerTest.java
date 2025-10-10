@@ -11,6 +11,7 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.http.ResponseEntity;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -175,6 +176,94 @@ class OrderControllerTest {
         );
     }
 
+    @Test
+    void testRaiseDispute_success() {
+        DisputeRequestDTO dto = new DisputeRequestDTO();
+        dto.setOrderId("order1");
+        dto.setProductId("prod1");
+        dto.setReason("Damaged");
+        dto.setDescription("Item arrived broken");
 
+        doNothing().when(orderService).raiseDispute(anyString(), anyString(), anyString(), anyString());
+
+        ResponseEntity<?> response = orderController.raiseDispute(dto);
+
+        assertEquals(200, response.getStatusCodeValue());
+        assertEquals("Dispute raised successfully.", response.getBody());
+        verify(orderService, times(1)).raiseDispute("order1", "prod1", "Damaged", "Item arrived broken");
+    }
+
+    @Test
+    void testRaiseDispute_runtimeException() {
+        DisputeRequestDTO dto = new DisputeRequestDTO();
+        dto.setOrderId("order1");
+        dto.setProductId("prod1");
+
+        // Use any() instead of anyString() to match null
+        doThrow(new RuntimeException("Order not found"))
+                .when(orderService).raiseDispute(any(), any(), any(), any());
+
+        ResponseEntity<?> response = orderController.raiseDispute(dto);
+
+        assertEquals(400, response.getStatusCodeValue());
+        assertEquals("Order not found", response.getBody());
+        verify(orderService, times(1)).raiseDispute(any(), any(), any(), any());
+    }
+
+
+    // ----------------- getAllOrders -----------------
+    @Test
+    void testGetAllOrders_nonEmpty() {
+        OrderResponseDTO order = new OrderResponseDTO();
+        when(orderService.getAllOrders()).thenReturn(Collections.singletonList(order));
+
+        ResponseEntity<List<OrderResponseDTO>> response = orderController.getAllOrders();
+
+        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(1, response.getBody().size());
+        verify(orderService, times(1)).getAllOrders();
+    }
+
+    @Test
+    void testGetAllOrders_empty() {
+        when(orderService.getAllOrders()).thenReturn(Collections.emptyList());
+
+        ResponseEntity<List<OrderResponseDTO>> response = orderController.getAllOrders();
+
+        assertEquals(204, response.getStatusCodeValue()); // No content
+        assertNull(response.getBody());
+        verify(orderService, times(1)).getAllOrders();
+    }
+
+    // ----------------- resolveDispute -----------------
+    @Test
+    void testResolveDispute_success() {
+        ResolveDisputeDTO dto = new ResolveDisputeDTO();
+        dto.setOrderId("order1");
+        dto.setProductId("prod1");
+
+        doNothing().when(orderService).resolveDispute(anyString(), anyString());
+
+        ResponseEntity<?> response = orderController.resolveDispute(dto);
+
+        assertEquals(200, response.getStatusCodeValue());
+        assertEquals("Dispute resolved successfully.", response.getBody());
+        verify(orderService, times(1)).resolveDispute("order1", "prod1");
+    }
+
+    @Test
+    void testResolveDispute_runtimeException() {
+        ResolveDisputeDTO dto = new ResolveDisputeDTO();
+        dto.setOrderId("order1");
+        dto.setProductId("prod1");
+
+        doThrow(new RuntimeException("Order not found")).when(orderService).resolveDispute(anyString(), anyString());
+
+        ResponseEntity<?> response = orderController.resolveDispute(dto);
+
+        assertEquals(400, response.getStatusCodeValue());
+        assertEquals("Order not found", response.getBody());
+        verify(orderService, times(1)).resolveDispute("order1", "prod1");
+    }
 
 }

@@ -14,6 +14,7 @@ public class ProductResponse {
     private String category;
     private int stock;
     private String sellerId;
+    private String sellerName;
     private boolean lowStock; // true if stock < 20
 
 
@@ -40,7 +41,6 @@ public class ProductResponse {
         this.lowStock = stock < 20; // automatically set lowStock
     }
 
-        // Optional: setter that also updates lowStock
     public void setStock(int stock) {
         this.stock = stock;
         this.lowStock = stock < 20;

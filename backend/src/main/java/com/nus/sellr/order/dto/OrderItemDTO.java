@@ -20,5 +20,12 @@ public class OrderItemDTO {
     private Integer rating;
     private String review;
     private String sellerId;
+    private String sellerName;
     private double price;
+
+    // Dispute-related fields
+    private boolean disputeRaised;
+    private String disputeReason;
+    private String disputeDescription;
+    private LocalDateTime disputeRaisedAt;
 }

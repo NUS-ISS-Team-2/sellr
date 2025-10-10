@@ -88,6 +88,11 @@ public class UserService {
         Optional<User> userOptional = userRepository.findByIdentifierAcrossCollections(loginRequest.getIdentifier());
         if (userOptional.isPresent()) {
             User user = userOptional.get();
+
+            if (user.isDisabled()) {
+                throw new RuntimeException("User account is disabled.");
+            }
+
             if (passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
                 String token = jwtUtils.generateToken(user);
                 return new LoginResponse(user.getId(), user.getUsername(), user.getEmail(), token);
@@ -124,7 +129,8 @@ public class UserService {
                             user.getId(),
                             user.getUsername(),
                             user.getEmail(),
-                            role
+                            role,
+                            user.isDisabled()
                     );
                 })
                 .collect(Collectors.toList());

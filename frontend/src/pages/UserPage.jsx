@@ -52,6 +52,22 @@ export default function UsersPage() {
         }
     };
 
+    const handleToggleDisable = async (user) => {
+        try {
+            const endpoint = `${API_USERS}/${user.id}/${user.disabled ? "enable" : "disable"}`;
+            await axios.put(endpoint);
+            // Update state
+            setUsers((prev) =>
+                prev.map((u) =>
+                    u.id === user.id ? { ...u, disabled: !u.disabled } : u
+                )
+            );
+        } catch (err) {
+            console.error("Failed to update user status:", err);
+            alert("Failed to update user status");
+        }
+    };
+
     return (
         <div className="flex flex-col min-h-screen bg-gray-50">
             <Header />
@@ -69,6 +85,7 @@ export default function UsersPage() {
                                     <th className="px-4 py-3">Username</th>
                                     <th className="px-4 py-3">Email</th>
                                     <th className="px-4 py-3">Role</th>
+                                    <th className="px-4 py-3">Status</th>
                                     <th className="px-4 py-3 text-right">Actions</th>
                                 </tr>
                             </thead>
@@ -98,6 +115,13 @@ export default function UsersPage() {
                                             <td className="px-4 py-4">{user.username}</td>
                                             <td className="px-4 py-4">{user.email}</td>
                                             <td className="px-4 py-4">{user.role}</td>
+                                            <td className="px-4 py-4">
+                                                {user.disabled ? (
+                                                    <span className="text-red-600 font-semibold">Disabled</span>
+                                                ) : (
+                                                    <span className="text-green-600 font-semibold">Active</span>
+                                                )}
+                                            </td>
                                             <td className="px-4 py-4 text-right space-x-2">
                                                 <button
                                                     className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
@@ -110,6 +134,13 @@ export default function UsersPage() {
                                                     onClick={() => setPasswordUser(user)}
                                                 >
                                                     Change Password
+                                                </button>
+                                                <button
+                                                    className={`px-2 py-1 rounded text-white ${user.disabled ? "bg-green-500 hover:bg-green-600" : "bg-red-500 hover:bg-red-600"
+                                                        }`}
+                                                    onClick={() => handleToggleDisable(user)}
+                                                >
+                                                    {user.disabled ? "Enable" : "Disable"}
                                                 </button>
                                             </td>
                                         </tr>

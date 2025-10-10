@@ -20,6 +20,7 @@ import AddProductReviewPage from "./pages/AddProductReviewPage";
 import ContactUsPage from "./pages/ContactUsPage";
 import LogoutPage from "./pages/LogoutPage";
 import ProtectedRoute from "./context/ProtectedRoutes";
+import DisputePage from "./pages/DisputePage";
 
 export default function App() {
   return (
@@ -45,6 +46,17 @@ export default function App() {
             element={
               <ProtectedRoute allowedRoles={["SELLER", "ADMIN"]}>
                 <ProductManagementPage />
+              </ProtectedRoute>
+            }
+          />
+
+
+
+          <Route
+            path="/disputes"
+            element={
+              <ProtectedRoute allowedRoles={["SELLER"]}>
+                <DisputePage />
               </ProtectedRoute>
             }
           />

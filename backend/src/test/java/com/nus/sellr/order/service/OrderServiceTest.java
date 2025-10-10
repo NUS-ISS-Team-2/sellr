@@ -12,6 +12,8 @@ import com.nus.sellr.order.repository.OrderRepository;
 import com.nus.sellr.product.dto.ProductResponse;
 import com.nus.sellr.product.entity.Product;
 import com.nus.sellr.product.service.ProductService;
+import com.nus.sellr.user.entity.Seller;
+import com.nus.sellr.user.repository.SellerRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -44,6 +46,8 @@ class OrderServiceTest {
 
     @InjectMocks
     private OrderService orderService; // Injects all mocks into constructor
+    @Mock
+    private SellerRepository sellerRepository;
 
     @BeforeEach
     void setUp() {
@@ -59,14 +63,16 @@ class OrderServiceTest {
 
     @Test
     void testCheckout_withCreditCard_success() {
-
         CheckoutRequestDTO request = createCheckoutRequest("Credit Card");
-        request.setPaymentDetails(new PaymentDetails());
-        request.getPaymentDetails().setCardNumber("1234");
-        request.getPaymentDetails().setCardName("John Doe");
-        request.getPaymentDetails().setExpiry("12/25");
-        request.getPaymentDetails().setCvv("123");
 
+        PaymentDetails pd = new PaymentDetails();
+        pd.setCardNumber("1234");
+        pd.setCardName("John Doe");
+        pd.setExpiry("12/25");
+        pd.setCvv("123");
+        request.setPaymentDetails(pd);
+
+        // Mock save and product service
         mockSaveAndProduct();
 
         OrderResponseDTO response = orderService.checkout(request);
@@ -94,19 +100,21 @@ class OrderServiceTest {
     }
 
 
-    // ----------------- PayPal -----------------
     @Test
     void testCheckout_withPayPal_success() {
         CheckoutRequestDTO request = createCheckoutRequest("PayPal");
-        request.setPaymentDetails(new PaymentDetails());
-        request.getPaymentDetails().setPaypalEmail("test@paypal.com");
 
+        PaymentDetails pd = new PaymentDetails();
+        pd.setPaypalEmail("test@paypal.com");
+        request.setPaymentDetails(pd);
+
+        // Mock save and product service
         mockSaveAndProduct();
 
         OrderResponseDTO response = orderService.checkout(request);
 
         assertNotNull(response);
-        verify(cartService).clearCart("user1");
+        verify(cartService, times(1)).clearCart("user1");
     }
 
     @Test
@@ -128,14 +136,16 @@ class OrderServiceTest {
     }
 
 
-    // ----------------- Bank Transfer -----------------
     @Test
     void testCheckout_withBankTransfer_success() {
-        CheckoutRequestDTO request = createCheckoutRequest("PayNow");
+        // Use existing helper
+        CheckoutRequestDTO request = createCheckoutRequest("Bank Transfer");
+
         PaymentDetails pd = new PaymentDetails();
-        pd.setReferenceNumber("123456");
+        pd.setReferenceNumber("123456"); // valid bank transfer info
         request.setPaymentDetails(pd);
 
+        // Mock repository and product service
         mockSaveAndProduct();
 
         OrderResponseDTO response = orderService.checkout(request);
@@ -147,19 +157,21 @@ class OrderServiceTest {
     @Test
     void testCheckout_withBankTransfer_invalidDetails() {
         CheckoutRequestDTO request = createCheckoutRequest("Bank Transfer");
-        request.setPaymentDetails(new PaymentDetails()); // missing bank details
+        request.setPaymentDetails(new PaymentDetails()); // missing required bank info
 
-        // Mock factory to return the mock paymentStrategy
+        // Mock factory to return the mock payment strategy
         when(paymentStrategyFactory.getStrategy("Bank Transfer")).thenReturn(paymentStrategy);
 
-        // Mock strategy to throw exception on invalid details
+        // Mock strategy to throw exception for invalid details
         doThrow(new RuntimeException("Invalid bank transfer details"))
                 .when(paymentStrategy).validate(any(PaymentDetails.class));
 
         RuntimeException ex = assertThrows(RuntimeException.class,
                 () -> orderService.checkout(request));
+
         assertEquals("Invalid bank transfer details", ex.getMessage());
     }
+
 
 
     // ----------------- Helper Methods -----------------
@@ -243,6 +255,7 @@ class OrderServiceTest {
     // ----------------- createOrder -----------------
     @Test
     void testCreateOrder_success() {
+        // ------------------ Input DTO ------------------
         CreateOrderDTO dto = new CreateOrderDTO();
         dto.setUserId("user1");
 
@@ -250,34 +263,55 @@ class OrderServiceTest {
         itemDTO.setProductId("prod1");
         itemDTO.setQuantity(2);
         itemDTO.setShippingFee(BigDecimal.valueOf(5));
+        itemDTO.setSellerId("seller1"); // Important for sellerName mapping
         dto.setItems(Collections.singletonList(itemDTO));
 
-        // Mock save
+        // ------------------ Mock saved order ------------------
         Order savedOrder = new Order("user1");
         savedOrder.setId("order123");
         savedOrder.setItems(Collections.singletonList(
-                new OrderItem("prod1", 2, BigDecimal.valueOf(5), null, null)
+                new OrderItem("prod1", 2, BigDecimal.valueOf(5), null, "seller1")
         ));
         savedOrder.setOrderPrice(BigDecimal.valueOf(5));
         when(orderRepository.save(any(Order.class))).thenReturn(savedOrder);
 
-        // Mock productService
+        // ------------------ Mock product service ------------------
         when(productService.getProductById("prod1"))
                 .thenReturn(new ProductResponse(
                         "prod1", "Product 1", "Some description", 100.0,
                         "url", "Category A", 10, "seller1"
                 ));
 
+        // ------------------ Mock seller repository ------------------
+        Seller mockSeller = new Seller();
+        mockSeller.setId("seller1");
+        mockSeller.setUsername("Seller One");
+        when(sellerRepository.findById("seller1")).thenReturn(Optional.of(mockSeller));
+
+        // ------------------ Call service ------------------
         OrderResponseDTO response = orderService.createOrder(dto);
 
+        // ------------------ Assertions ------------------
         assertNotNull(response);
         assertEquals("order123", response.getOrderId());
         assertEquals("user1", response.getUserId());
         assertEquals(BigDecimal.valueOf(5), response.getOrderPrice());
         assertEquals(1, response.getItems().size());
 
+        OrderItemDTO itemResponse = response.getItems().get(0);
+        assertEquals("prod1", itemResponse.getProductId());
+        assertEquals("Product 1", itemResponse.getProductName());
+        assertEquals("Seller One", itemResponse.getSellerName()); // new field
+
+        // Dispute-related fields
+        assertFalse(itemResponse.isDisputeRaised());
+        assertNull(itemResponse.getDisputeReason());
+        assertNull(itemResponse.getDisputeDescription());
+        assertNull(itemResponse.getDisputeRaisedAt());
+
         verify(orderRepository, times(1)).save(any(Order.class));
     }
+
 
 
     // ----------------- getOrderById -----------------
@@ -302,25 +336,33 @@ class OrderServiceTest {
         assertEquals("Order not found", ex.getMessage());
     }
 
-    // ----------------- getOrdersByUserId -----------------
-    @Test
-    void testGetOrdersByUserId_incompleteStatus() {
-        Order order = new Order("user1");
+    // Helper to create an order with one item
+    private Order createOrderWithItem(String userId, String productId, OrderStatus itemStatus) {
+        Order order = new Order(userId);
         order.setId("order123");
 
-        OrderItem item1 = new OrderItem();
-        item1.setProductId("prod1");  // <-- must set productId
-        item1.setStatus(OrderStatus.PENDING);
-        order.setItems(Collections.singletonList(item1));
+        OrderItem item = new OrderItem();
+        item.setProductId(productId);
+        item.setStatus(itemStatus);
 
-        when(orderRepository.findByUserId("user1")).thenReturn(Collections.singletonList(order));
+        order.setItems(Collections.singletonList(item));
+        return order;
+    }
 
-        // Mock productService
-        when(productService.getProductById("prod1"))
+    // Helper to mock productService
+    private void mockProductService(String productId) {
+        when(productService.getProductById(productId))
                 .thenReturn(new ProductResponse(
-                        "prod1", "Product 1", "Some description", 100.0,
+                        productId, "Product 1", "Some description", 100.0,
                         "url", "Category A", 10, "seller1"
                 ));
+    }
+
+    @Test
+    void testGetOrdersByUserId_incompleteStatus() {
+        Order order = createOrderWithItem("user1", "prod1", OrderStatus.PENDING);
+        when(orderRepository.findByUserId("user1")).thenReturn(Collections.singletonList(order));
+        mockProductService("prod1");
 
         List<OrderResponseDTO> responses = orderService.getOrdersByUserId("user1");
 
@@ -330,25 +372,11 @@ class OrderServiceTest {
         verify(orderRepository, never()).save(order); // incomplete orders not saved
     }
 
-
     @Test
     void testGetOrdersByUserId_completedStatus() {
-        Order order = new Order("user1");
-        order.setId("order123");
-
-        OrderItem item1 = new OrderItem();
-        item1.setProductId("prod1");  // <-- must set productId
-        item1.setStatus(OrderStatus.DELIVERED);
-        order.setItems(Collections.singletonList(item1));
-
+        Order order = createOrderWithItem("user1", "prod1", OrderStatus.DELIVERED);
         when(orderRepository.findByUserId("user1")).thenReturn(Collections.singletonList(order));
-
-        // Mock productService
-        when(productService.getProductById("prod1"))
-                .thenReturn(new ProductResponse(
-                        "prod1", "Product 1", "Some description", 100.0,
-                        "url", "Category A", 10, "seller1"
-                ));
+        mockProductService("prod1");
 
         List<OrderResponseDTO> responses = orderService.getOrdersByUserId("user1");
 
@@ -357,6 +385,7 @@ class OrderServiceTest {
 
         verify(orderRepository, times(1)).save(order); // COMPLETED orders saved
     }
+
 
     @Test
     void testUpdateOrderItemStatusAsBuyer_allDelivered() {
@@ -384,20 +413,28 @@ class OrderServiceTest {
         verify(orderRepository, times(1)).save(order);
     }
 
+    // Helper to create an OrderItem
+    private OrderItem createOrderItem(String productId, String sellerId) {
+        OrderItem item = new OrderItem();
+        item.setProductId(productId);
+        item.setSellerId(sellerId);
+        return item;
+    }
+
+    // Helper to create an Order
+    private Order createOrder(String userId, String orderId, List<OrderItem> items) {
+        Order order = new Order(userId);
+        order.setId(orderId);
+        order.setItems(items);
+        return order;
+    }
+
     @Test
     void testGetOrdersForSeller_normalFlow() {
-        // Prepare two orders, only some items belong to seller1
-        OrderItem item1 = new OrderItem();
-        item1.setProductId("prod1");
-        item1.setSellerId("seller1");
-
-        OrderItem item2 = new OrderItem();
-        item2.setProductId("prod2");
-        item2.setSellerId("seller2");
-
-        Order order = new Order("user1");
-        order.setId("order123");
-        order.setItems(Arrays.asList(item1, item2));
+        // Prepare items and order
+        OrderItem item1 = createOrderItem("prod1", "seller1");
+        OrderItem item2 = createOrderItem("prod2", "seller2");
+        Order order = createOrder("user1", "order123", Arrays.asList(item1, item2));
 
         when(orderRepository.findOrdersBySellerId("seller1")).thenReturn(Collections.singletonList(order));
 
@@ -410,8 +447,58 @@ class OrderServiceTest {
 
         assertEquals(1, results.size());
         OrderResponseDTO dto = results.get(0);
-        // Only seller1 items should be kept
+
+        // Only seller1 items should be included
         assertEquals(1, dto.getItems().size());
         assertEquals("prod1", dto.getItems().get(0).getProductId());
     }
+
+    @Test
+    void testRaiseDispute_success() {
+        OrderItem item = new OrderItem();
+        item.setProductId("prod1");
+        item.setStatus(OrderStatus.DELIVERED);
+
+        Order order = createOrder("user1", "order123", Collections.singletonList(item));
+
+        when(orderRepository.findById("order123")).thenReturn(Optional.of(order));
+
+        orderService.raiseDispute("order123", "prod1", "Damaged", "Broken on arrival");
+
+        assertEquals(OrderStatus.DISPUTING, item.getStatus());
+        assertTrue(item.isDisputeRaised());
+        assertEquals("Damaged", item.getDisputeReason());
+        assertEquals("Broken on arrival", item.getDisputeDescription());
+        assertNotNull(item.getDisputeRaisedAt());
+
+        verify(orderRepository, times(1)).save(order);
+    }
+
+    @Test
+    void testRaiseDispute_invalidItemStatus() {
+        OrderItem item = new OrderItem();
+        item.setProductId("prod1");
+        item.setStatus(OrderStatus.PENDING);
+
+        Order order = createOrder("user1", "order123", Collections.singletonList(item));
+        when(orderRepository.findById("order123")).thenReturn(Optional.of(order));
+
+        RuntimeException ex = assertThrows(RuntimeException.class, () ->
+                orderService.raiseDispute("order123", "prod1", "Damaged", "Broken on arrival"));
+
+        assertEquals("Dispute can only be raised for shipped or delivered items.", ex.getMessage());
+        verify(orderRepository, never()).save(order);
+    }
+
+    @Test
+    void testRaiseDispute_orderNotFound() {
+        when(orderRepository.findById("order123")).thenReturn(Optional.empty());
+
+        RuntimeException ex = assertThrows(RuntimeException.class, () ->
+                orderService.raiseDispute("order123", "prod1", "Damaged", "Broken on arrival"));
+
+        assertEquals("Order not found", ex.getMessage());
+    }
+
+
 }

@@ -11,7 +11,7 @@ export default function OrderManagementPage() {
   const [deliveryDates, setDeliveryDates] = useState({});
 
   const API_URL = `${API_BASE_URL}/orders`;
-  const { userId } = useContext(UserContext);
+  const { userId, role } = useContext(UserContext);
 
   useEffect(() => {
     fetchOrders();
@@ -21,9 +21,16 @@ export default function OrderManagementPage() {
   const fetchOrders = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`${API_URL}/seller`, {
-        params: { sellerId: userId },
-      });
+      let res;
+
+      if (role === "ADMIN") {
+        // Admin: fetch all orders
+        res = await axios.get(`${API_URL}`);
+      } else if (role === "SELLER") {
+        // Seller: fetch only their orders
+        res = await axios.get(`${API_URL}/seller`, { params: { sellerId: userId } });
+      }
+
       setOrders(res.data);
     } catch (err) {
       console.error("Failed to fetch orders:", err);
@@ -79,6 +86,8 @@ export default function OrderManagementPage() {
   };
 
   const computeSellerStatus = (orderItems) => {
+    if (role === "ADMIN") return "Not Applicable for Admin";
+
     if (!orderItems || orderItems.length === 0) return "N/A";
 
     const allShippedOrDelivered = orderItems.every(
@@ -138,7 +147,7 @@ export default function OrderManagementPage() {
                       <td className="px-4 py-4">{new Date(order.createdAt).toLocaleString()}</td>
                       <td className="px-4 py-4">
                         ${order.items
-                          .filter(item => item.sellerId === userId)
+                          .filter(item => role === "ADMIN" ? true : item.sellerId === userId)
                           .reduce((sum, item) => sum + (item.price * item.quantity), 0)
                           .toFixed(2)}
                       </td>
@@ -190,6 +199,7 @@ export default function OrderManagementPage() {
                         <div>
                           <p className="font-medium">{item.productName}</p>
                           <p>Qty: {item.quantity}</p>
+                          {role === "ADMIN" && <p>Sold By: {item.sellerName}</p>}
                           <p>Status: {item.status}</p>
                           {item.deliveryDate ? (
                             <p>
@@ -208,7 +218,8 @@ export default function OrderManagementPage() {
                         </div>
                       </div>
 
-                      {item.status === "PENDING" && (
+                      {/* Show calendar & button only for sellers, not admins */}
+                      {role !== "ADMIN" && item.status === "PENDING" && (
                         <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
                           <input
                             type="date"
@@ -230,6 +241,7 @@ export default function OrderManagementPage() {
                     </li>
                   );
                 })}
+
               </ul>
 
               <button

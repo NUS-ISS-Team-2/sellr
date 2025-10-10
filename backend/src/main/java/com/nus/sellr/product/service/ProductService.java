@@ -5,6 +5,7 @@ import com.nus.sellr.product.dto.ProductResponse;
 import com.nus.sellr.product.entity.Product;
 import com.nus.sellr.product.mapper.ProductMapper;
 import com.nus.sellr.product.repository.ProductRepository;
+import com.nus.sellr.user.repository.SellerRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -25,14 +26,16 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final MongoTemplate mongoTemplate;
     private final ProductMapper productMapper;
+    private final SellerRepository sellerRepository;
 
     public ProductService(
             ProductRepository productRepository,
             MongoTemplate mongoTemplate,
-            ProductMapper productMapper) {
+            ProductMapper productMapper, SellerRepository sellerRepository) {
         this.productRepository = productRepository;
         this.mongoTemplate = mongoTemplate;
         this.productMapper = productMapper;
+        this.sellerRepository = sellerRepository;
     }
 
     // Create new product
@@ -58,14 +61,17 @@ public class ProductService {
 
     // Get single product by ID
     public ProductResponse getProductById(String id) {
-        Optional<Product> productOpt = productRepository.findById(id);
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Product not found with id: " + id));
 
-        if (productOpt.isEmpty()) {
-            throw new IllegalArgumentException("Product not found with id: " + id);
-        }
+        ProductResponse response = productMapper.toResponse(product);
 
-        Product p = productOpt.get();
-        return productMapper.toResponse(p);
+        // ✅ Fetch and attach seller name
+        sellerRepository.findById(product.getSellerId())
+                .ifPresentOrElse(
+                        seller -> response.setSellerName(seller.getUsername()),
+                        () -> response.setSellerName("Unknown Seller"));
+        return response;
     }
 
     // Update product

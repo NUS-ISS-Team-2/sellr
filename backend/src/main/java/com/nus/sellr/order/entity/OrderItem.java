@@ -18,7 +18,13 @@ public class OrderItem {
     private OrderStatus status;
     private String imageUrl;
     private String sellerId;
-    private double price; 
+    private double price;
+
+    // Dispute-related fields
+    private boolean disputeRaised = false;
+    private String disputeReason;
+    private String disputeDescription;
+    private LocalDateTime disputeRaisedAt;
 
     public OrderItem() {}
 
