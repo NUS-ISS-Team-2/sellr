@@ -79,6 +79,11 @@ export default function Header() {
     setOpenDropdown(null);
   };
 
+  const handleManageDisputes = () => {
+    navigate("/disputes");
+    setOpenDropdown(null);
+  };
+
   return (
     <header className="bg-blue-600 text-white">
       <div className="container mx-auto flex items-center justify-between px-6 py-4">
@@ -166,6 +171,12 @@ export default function Header() {
                     className="w-full text-left px-4 py-2 hover:bg-gray-200"
                   >
                     Manage Orders
+                  </button>
+                  <button
+                    onClick={handleManageDisputes}
+                    className="w-full text-left px-4 py-2 hover:bg-gray-200"
+                  >
+                    Manage Disputes
                   </button>
                 </div>
               )}

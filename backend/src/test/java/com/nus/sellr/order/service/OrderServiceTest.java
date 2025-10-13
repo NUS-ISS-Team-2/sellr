@@ -500,5 +500,121 @@ class OrderServiceTest {
         assertEquals("Order not found", ex.getMessage());
     }
 
+    @Test
+    void addReviewToOrderItem_shouldAddReviewAndRating() {
+        // Arrange
+        OrderItem item = new OrderItem();
+        item.setProductId("prod1");
+        Order order = new Order();
+        order.setId("order1");
+        order.setItems(Arrays.asList(item));
+
+        AddReviewDTO reviewDTO = new AddReviewDTO();
+        reviewDTO.setOrderId("order1");
+        reviewDTO.setProductId("prod1");
+        reviewDTO.setRating(5);
+        reviewDTO.setReview("Excellent!");
+
+        when(orderRepository.findById("order1")).thenReturn(Optional.of(order));
+
+        // Act
+        orderService.addReviewToOrderItem(reviewDTO);
+
+        // Assert
+        assertEquals(5, item.getRating());
+        assertEquals("Excellent!", item.getReview());
+        verify(orderRepository).save(order);
+    }
+
+    @Test
+    void addReviewToOrderItem_shouldThrowExceptionIfOrderNotFound() {
+        AddReviewDTO reviewDTO = new AddReviewDTO();
+        reviewDTO.setOrderId("order1");
+        reviewDTO.setProductId("prod1");
+
+        when(orderRepository.findById("order1")).thenReturn(Optional.empty());
+
+        RuntimeException ex = assertThrows(RuntimeException.class,
+                () -> orderService.addReviewToOrderItem(reviewDTO));
+        assertEquals("Order not found", ex.getMessage());
+    }
+
+    // ------------------------------
+    // Test getAllOrders
+    // ------------------------------
+    @Test
+    void getAllOrders_shouldReturnMappedOrderResponseDTOs() {
+        // Arrange
+        Order order1 = new Order();
+        order1.setId("order1");
+        Order order2 = new Order();
+        order2.setId("order2");
+
+        when(orderRepository.findAll()).thenReturn(Arrays.asList(order1, order2));
+
+        // Act
+        List<OrderResponseDTO> result = orderService.getAllOrders();
+
+        // Assert
+        assertEquals(2, result.size());
+        assertTrue(result.stream().anyMatch(o -> o.getOrderId().equals("order1")));
+        assertTrue(result.stream().anyMatch(o -> o.getOrderId().equals("order2")));
+    }
+
+    // ------------------------------
+    // Test resolveDispute
+    // ------------------------------
+    @Test
+    void resolveDispute_shouldResolveItemAndSetOrderCompletedIfAllResolvedOrDelivered() {
+        // Arrange
+        OrderItem item1 = new OrderItem();
+        item1.setProductId("prod1");
+        item1.setStatus(OrderStatus.DISPUTING);
+
+        OrderItem item2 = new OrderItem();
+        item2.setProductId("prod2");
+        item2.setStatus(OrderStatus.DELIVERED);
+
+        Order order = new Order();
+        order.setId("order1");
+        order.setItems(Arrays.asList(item1, item2));
+
+        when(orderRepository.findById("order1")).thenReturn(Optional.of(order));
+
+        // Act
+        orderService.resolveDispute("order1", "prod1");
+
+        // Assert
+        assertEquals(OrderStatus.RESOLVED, item1.getStatus());
+        assertFalse(item1.isDisputeRaised());
+        assertEquals(OrderStatus.COMPLETED, order.getOverallStatus());
+        verify(orderRepository).save(order);
+    }
+
+    @Test
+    void resolveDispute_shouldThrowExceptionIfItemNotInDispute() {
+        OrderItem item = new OrderItem();
+        item.setProductId("prod1");
+        item.setStatus(OrderStatus.SHIPPED);
+
+        Order order = new Order();
+        order.setId("order1");
+        order.setItems(Collections.singletonList(item));
+
+        when(orderRepository.findById("order1")).thenReturn(Optional.of(order));
+
+        RuntimeException ex = assertThrows(RuntimeException.class,
+                () -> orderService.resolveDispute("order1", "prod1"));
+        assertEquals("Item is not in dispute.", ex.getMessage());
+    }
+
+    @Test
+    void resolveDispute_shouldThrowExceptionIfOrderNotFound() {
+        when(orderRepository.findById("order1")).thenReturn(Optional.empty());
+
+        RuntimeException ex = assertThrows(RuntimeException.class,
+                () -> orderService.resolveDispute("order1", "prod1"));
+        assertEquals("Order not found", ex.getMessage());
+    }
 
 }

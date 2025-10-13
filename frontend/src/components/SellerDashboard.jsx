@@ -33,7 +33,7 @@ export default function SellerDashboard({ products }) {
         // Count disputed items
         const disputedCount = orders.reduce((count, order) => {
           const disputedItems = order.items?.filter(
-            (item) => item.sellerId === userId && item.status === "DISPUTED"
+            (item) => item.sellerId === userId && item.status === "DISPUTING"
           ).length;
           return count + (disputedItems || 0);
         }, 0);

@@ -105,12 +105,13 @@ public class OrderService {
                             .filter(item -> item.getStatus() == OrderStatus.SHIPPED)
                             .count();
 
-                    long deliveredCount = order.getItems().stream()
-                            .filter(item -> item.getStatus() == OrderStatus.DELIVERED)
+                    long activeCount = order.getItems().stream()
+                            .filter(item -> item.getStatus() == OrderStatus.DELIVERED
+                                    || item.getStatus() == OrderStatus.RESOLVED)
                             .count();
 
                     // If all items are delivered, mark overall status as COMPLETED
-                    if (pendingCount == 0 && shippedCount == 0 && deliveredCount > 0) {
+                    if (pendingCount == 0 && shippedCount == 0 && activeCount > 0) {
                         order.setOverallStatus(OrderStatus.COMPLETED);
                         orderRepository.save(order);
                     } else {
@@ -262,9 +263,10 @@ public class OrderService {
                     item.setDeliveryDate(LocalDateTime.now());
                 });
 
-        // If all items are now DELIVERED, update overall order status
+        // If all items are now DELIVERED or RESOLVED, update overall order status
         boolean allDelivered = order.getItems().stream()
-                .allMatch(item -> item.getStatus() == OrderStatus.DELIVERED);
+                .allMatch(item -> item.getStatus() == OrderStatus.DELIVERED
+                        || item.getStatus() == OrderStatus.RESOLVED);
 
         if (allDelivered) {
             order.setOverallStatus(OrderStatus.DELIVERED);
@@ -314,10 +316,20 @@ public class OrderService {
                     }
                     item.setStatus(OrderStatus.RESOLVED); // or COMPLETED
                     item.setDisputeRaised(false);
-                    item.setDisputeReason(null);
-                    item.setDisputeDescription(null);
+                    //item.setDisputeReason(null);
+                    //item.setDisputeDescription(null);
                     item.setDisputeRaisedAt(LocalDateTime.now());
                 });
+
+
+        // After resolving, check if all items are now DELIVERED or RESOLVED
+        boolean allCompleted = order.getItems().stream()
+                .allMatch(i -> i.getStatus() == OrderStatus.DELIVERED
+                        || i.getStatus() == OrderStatus.RESOLVED);
+
+        if (allCompleted) {
+            order.setOverallStatus(OrderStatus.COMPLETED);
+        }
 
         orderRepository.save(order);
     }
