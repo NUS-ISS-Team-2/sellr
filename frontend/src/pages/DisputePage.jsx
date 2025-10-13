@@ -6,11 +6,44 @@ import { UserContext } from "../context/UserContext";
 import Header from "../components/Header";
 import { API_BASE_URL } from "../config";
 
-export default function DisputeManagementPage() {
+// ✅ Simple reusable modal component
+function Modal({ isOpen, title, message, onClose }) {
+    if (!isOpen) return null;
+
+    return (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
+            <div className="bg-white rounded-lg shadow-lg max-w-sm w-full p-6 text-center">
+                <h2 className="text-xl font-semibold mb-2">{title}</h2>
+                <p className="text-gray-700 mb-6">{message}</p>
+                <button
+                    onClick={onClose}
+                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                >
+                    OK
+                </button>
+            </div>
+        </div>
+    );
+}
+
+export default function DisputePage() {
     const { userId, role } = useContext(UserContext);
     const [loading, setLoading] = useState(true);
     const [disputedItems, setDisputedItems] = useState([]);
     const [error, setError] = useState("");
+
+    // ✅ Modal state
+    const [modal, setModal] = useState({
+        isOpen: false,
+        title: "",
+        message: "",
+    });
+
+    const openModal = (title, message) =>
+        setModal({ isOpen: true, title, message });
+
+    const closeModal = () =>
+        setModal((prev) => ({ ...prev, isOpen: false }));
 
     useEffect(() => {
         if (!userId || role !== "SELLER") return;
@@ -28,7 +61,11 @@ export default function DisputeManagementPage() {
                 // Flatten all disputed items for this seller
                 const disputes = orders.flatMap((order) =>
                     order.items
-                        ?.filter((item) => item.sellerId === userId && (item.status === "DISPUTING" || item.status === "RESOLVED"))
+                        ?.filter(
+                            (item) =>
+                                item.sellerId === userId &&
+                                (item.status === "DISPUTING" || item.status === "RESOLVED")
+                        )
                         .map((item) => ({
                             ...item,
                             orderId: order.orderId,
@@ -36,7 +73,6 @@ export default function DisputeManagementPage() {
                             orderDate: order.createdAt,
                         }))
                 );
-                console.log(disputes);
                 setDisputedItems(disputes);
             } catch (err) {
                 console.error("Failed to fetch disputed orders:", err);
@@ -49,27 +85,30 @@ export default function DisputeManagementPage() {
         fetchDisputedOrders();
     }, [userId, role]);
 
-
     const handleContactBuyer = (buyerId) => {
-        alert("Feature not implemented")
+        openModal("Feature Not Implemented", "The contact buyer feature is not available yet.");
         console.log("Contact buyer:", buyerId);
     };
 
-
     const handleResolved = async (orderId, productId) => {
         try {
-
-            console.log(orderId, productId);
             await axios.put(`${API_BASE_URL}/orders/item/resolve`, {
                 orderId,
-                productId
+                productId,
             });
-            // Refresh the list of disputed items
-            setDisputedItems((prev) => prev.filter(item => !(item.orderId === orderId && item.productId === productId)));
-            alert("Dispute marked as resolved.");
+
+            setDisputedItems((prev) =>
+                prev.map((item) =>
+                    item.orderId === orderId && item.productId === productId
+                        ? { ...item, status: "RESOLVED" }
+                        : item
+                )
+            );
+
+            openModal("Success", "Dispute marked as resolved.");
         } catch (err) {
             console.error("Failed to resolve dispute:", err);
-            alert("Failed to resolve dispute.");
+            openModal("Error", "Failed to resolve dispute.");
         }
     };
 
@@ -87,7 +126,9 @@ export default function DisputeManagementPage() {
                 ) : error ? (
                     <div className="text-red-600 text-center py-4">{error}</div>
                 ) : disputedItems.length === 0 ? (
-                    <div className="text-gray-500 text-center py-4">No disputed items found.</div>
+                    <div className="text-gray-500 text-center py-4">
+                        No disputed items found.
+                    </div>
                 ) : (
                     <div className="overflow-x-auto border rounded-lg">
                         <table className="min-w-full text-left text-sm">
@@ -101,6 +142,7 @@ export default function DisputeManagementPage() {
                                     <th className="px-4 py-2 font-medium">Status</th>
                                     <th className="px-4 py-2 font-medium">Dispute Reason</th>
                                     <th className="px-4 py-2 font-medium">Date</th>
+                                    <th className="px-4 py-2 font-medium">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -123,21 +165,25 @@ export default function DisputeManagementPage() {
                                                 }`}
                                         >
                                             {item.status}
-                                        </td>                                        
-                                        <td className="px-4 py-2">{item.disputeDescription || "—"}</td>
-                                        <td className="px-4 py-2">{new Date(item.disputeRaisedAt).toLocaleString()}</td>
+                                        </td>
                                         <td className="px-4 py-2">
+                                            {item.disputeDescription || "—"}
+                                        </td>
+                                        <td className="px-4 py-2">
+                                            {new Date(item.disputeRaisedAt).toLocaleString()}
+                                        </td>
+                                        <td className="px-4 py-2 flex gap-2">
                                             <button
                                                 onClick={() => handleContactBuyer(item.userId)}
                                                 className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
                                             >
                                                 Contact Buyer
                                             </button>
-                                        </td>
-                                        <td className="px-4 py-2">
                                             <button
-                                                onClick={() => handleResolved(item.orderId, item.productId)}
-                                                className="px-3 py-1 bg-green-600 text-white rounded hover:bg-blue-700"
+                                                onClick={() =>
+                                                    handleResolved(item.orderId, item.productId)
+                                                }
+                                                className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700"
                                             >
                                                 Resolved
                                             </button>
@@ -158,6 +204,14 @@ export default function DisputeManagementPage() {
                     </Link>
                 </div>
             </main>
+
+            {/* ✅ Custom Modal */}
+            <Modal
+                isOpen={modal.isOpen}
+                title={modal.title}
+                message={modal.message}
+                onClose={closeModal}
+            />
         </div>
     );
 }
