@@ -192,6 +192,9 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
+      - name: Fix ZAP volume permissions
+        run: sudo chmod -R 777 $GITHUB_WORKSPACE
+
       - name: Run OWASP ZAP Baseline Scan
         uses: zaproxy/action-baseline@v0.10.0
         with:
