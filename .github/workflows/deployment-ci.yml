@@ -321,9 +321,10 @@ jobs:
               Analyze these security issues:
               {json.dumps(chunk, indent=2)}
 
-              For each issue, provide a Markdown table with columns:
+              For each issue, provide a concise recommendation in Markdown table format as below:
               Component | Title | Severity | Recommendation
               Ensure proper escaping of pipes (|) in titles and recommendations.
+              I have already prepared the headers md_lines = ["| Component | Title | Severity | Recommendation |", "|---|---|---|---|"], append only the rows for each issue.
               """
 
               response = openai.chat.completions.create(
