@@ -62,8 +62,6 @@ jobs:
             -Dsonar.projectKey=$SONAR_PROJECTKEY \
             -Dsonar.organization=$SONAR_ORG \
             -Dsonar.sources=frontend/src \
-            -Dsonar.tests=frontend/src/__tests__ \
-            -Dsonar.exclusions=frontend/src/setupTests.js \
             -Dsonar.javascript.lcov.reportPaths=frontend/coverage/lcov.info \
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.login=$SONAR_TOKEN \
@@ -73,7 +71,7 @@ jobs:
       - name: Export SonarCloud Frontend Issues
         run: |
           curl -s -u $SONAR_TOKEN_FRONTEND: \
-            "https://sonarcloud.io/api/issues/search?componentKeys=$SONAR_PROJECTKEY" \
+            "https://sonarcloud.io/api/issues/search?componentKeys=nus-iss-team-2_sellr-frontend&branch=main" \
             -o sonar-frontend-report.json
 
       - name: Upload Frontend Report
@@ -140,9 +138,9 @@ jobs:
 
       - name: Export SonarCloud Backend Issues
         run: |
-          curl -s -u $SONAR_TOKEN: \
-            "https://sonarcloud.io/api/issues/search?componentKeys=$SONAR_PROJECTKEY&ps=500" \
+          curl -s "https://sonarcloud.io/api/issues/search?componentKeys=NUS-ISS-Team-2_sellr&branch=main" \
             -o sonar-backend-report.json
+
 
       - name: Upload Backend Report
         uses: actions/upload-artifact@v4
@@ -192,6 +190,9 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
+
+      - name: Fix ZAP volume permissions
+        run: sudo chmod -R 777 $GITHUB_WORKSPACE
 
       - name: Run OWASP ZAP Baseline Scan
         uses: zaproxy/action-baseline@v0.10.0
@@ -321,4 +322,3 @@ jobs:
         with:
           name: ai-recommendations
           path: merged_reports/ai-recommendations.json
-
