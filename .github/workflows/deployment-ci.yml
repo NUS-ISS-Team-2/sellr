@@ -284,17 +284,17 @@ jobs:
 
           openai.api_key = os.environ["OPENAI_API_KEY"]
 
-          # Load merged security report (expected to be a list of issues)
+          # Load merged security report
           with open("merged_reports/security-report.json") as f:
               report = json.load(f)
 
           # Function to condense issues (keep only key fields)
-          def condense_issues(issue_list):
-              if not issue_list:
+          def condense_issues(component_report):
+              if not component_report:
                   return []
               condensed = []
-              for issue in issue_list:
-                  if not issue:
+              for issue in component_report.get("issues", []):
+                  if not isinstance(issue, dict):
                       continue
                   condensed.append({
                       "id": issue.get("id"),
@@ -305,8 +305,10 @@ jobs:
                   })
               return condensed
 
-          # Condense all issues
-          all_issues = condense_issues(report)
+          # Aggregate all issues safely from components
+          all_issues = []
+          for comp in ["frontend", "backend", "dast"]:
+              all_issues += condense_issues(report.get(comp, {}))
 
           # Chunk issues to avoid token limits
           chunk_size = 200
@@ -338,6 +340,7 @@ jobs:
               try:
                   chunk_output = json.loads(response.choices[0].message.content)
               except json.JSONDecodeError:
+                  # fallback if response is not JSON
                   chunk_output = [{"raw_text": response.choices[0].message.content}]
 
               if isinstance(chunk_output, list):
@@ -351,14 +354,16 @@ jobs:
           with open(json_path, "w") as f:
               json.dump(all_recommendations, f, indent=2)
 
-          # Generate Markdown report
+          # Generate Markdown report safely
           md_lines = ["| Component | Title | Severity | Recommendation |", "|---|---|---|---|"]
           for issue in all_recommendations:
               component = issue.get("component", "")
-              title = issue.get("title", issue.get("raw_text", "")).replace("|", "\\|")
+              title = issue.get("title") or issue.get("raw_text", "")
               severity = issue.get("severity", "")
-              recommendation = issue.get("recommendation", "").replace("|", "\\|")
-              md_lines.append(f"| {component} | {title} | {severity} | {recommendation} |")
+              recommendation = issue.get("recommendation") or issue.get("raw_text", "")
+              md_lines.append(
+                  f"| {component} | {title.replace('|', '\\|')} | {severity} | {recommendation.replace('|', '\\|')} |"
+              )
 
           md_path = "merged_reports/ai-recommendations.md"
           with open(md_path, "w") as f:
@@ -374,3 +379,4 @@ jobs:
           path: |
             merged_reports/ai-recommendations.json
             merged_reports/ai-recommendations.md
+
