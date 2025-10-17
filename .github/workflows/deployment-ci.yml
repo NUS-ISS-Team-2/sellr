@@ -276,15 +276,11 @@ jobs:
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
-      - name: AI Remediation Suggestions
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: |
           python <<EOF
           import os
           import json
-          import openai
           import math
+          import openai
 
           openai.api_key = os.environ["OPENAI_API_KEY"]
 
@@ -295,7 +291,7 @@ jobs:
           # Function to condense issues (keep only key fields)
           def condense_issues(component_report):
               if not component_report:
-                  return []  # return empty list if component is None
+                  return []
               condensed = []
               for issue in component_report.get("issues", []):
                   if not issue:
@@ -304,7 +300,8 @@ jobs:
                       "id": issue.get("id"),
                       "title": issue.get("title") or issue.get("message"),
                       "severity": issue.get("severity"),
-                      "component": issue.get("component")
+                      "component": issue.get("component"),
+                      "recommendation": issue.get("recommendation")  # optional prefilled
                   })
               return condensed
 
@@ -312,8 +309,8 @@ jobs:
           for comp in ["frontend", "backend", "dast"]:
               all_issues += condense_issues(report.get(comp, {}))
 
-          # Chunk issues to avoid exceeding token limits
-          chunk_size = 200  # adjust if still too large
+          # Chunk issues to avoid token limits
+          chunk_size = 200
           num_chunks = math.ceil(len(all_issues)/chunk_size)
           all_recommendations = []
 
@@ -341,23 +338,35 @@ jobs:
               try:
                   chunk_output = json.loads(response.choices[0].message.content)
               except json.JSONDecodeError:
-                  # fallback: wrap raw text if JSON parsing fails
-                  chunk_output = {"raw_text": response.choices[0].message.content}
+                  # fallback if response is not JSON
+                  chunk_output = [{"raw_text": response.choices[0].message.content}]
 
               all_recommendations.extend(chunk_output if isinstance(chunk_output, list) else [chunk_output])
 
-          # Save AI recommendations
+          # Save AI recommendations as JSON
           os.makedirs("merged_reports", exist_ok=True)
-          with open("merged_reports/ai-recommendations.json", "w") as f:
+          json_path = "merged_reports/ai-recommendations.json"
+          with open(json_path, "w") as f:
               json.dump(all_recommendations, f, indent=2)
+
+          # Generate Markdown report
+          md_lines = ["| Component | Title | Severity | Recommendation |", "|---|---|---|---|"]
+          for issue in all_recommendations:
+              component = issue.get("component", "")
+              title = issue.get("title", "").replace("|", "\\|")
+              severity = issue.get("severity", "")
+              recommendation = issue.get("recommendation", "").replace("|", "\\|")
+              md_lines.append(f"| {component} | {title} | {severity} | {recommendation} |")
+
+          md_path = "merged_reports/ai-recommendations.md"
+          with open(md_path, "w") as f:
+              f.write("\n".join(md_lines))
           EOF
 
-
-      # -------------------------
-      # Upload AI Recommendations
-      # -------------------------
       - name: Upload AI Recommendations
         uses: actions/upload-artifact@v4
         with:
           name: ai-recommendations
-          path: merged_reports/ai-recommendations.json
+          path: |
+            merged_reports/ai-recommendations.json
+            merged_reports/ai-recommendations.md
