@@ -71,8 +71,7 @@ jobs:
 
       - name: Export SonarCloud Frontend Issues
         run: |
-          curl -s -u $SONAR_TOKEN_FRONTEND: \
-            "https://sonarcloud.io/api/issues/search?componentKeys=$SONAR_PROJECTKEY" \
+          curl -s "https://sonarcloud.io/api/issues/search?componentKeys=$SONAR_PROJECTKEY" \
             -o sonar-frontend-report.json
 
       - name: Upload Frontend Report
@@ -139,7 +138,7 @@ jobs:
 
       - name: Export SonarCloud Backend Issues
         run: |
-          curl -s "https://sonarcloud.io/api/issues/search?componentKeys=NUS-ISS-Team-2_sellr&branch=main" \
+          curl -s "https://sonarcloud.io/api/issues/search?componentKeys=$SONAR_PROJECTKEY&branch=main" \
             -o sonar-backend-report.json
 
       - name: Upload Backend Report
