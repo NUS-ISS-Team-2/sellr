@@ -62,16 +62,17 @@ jobs:
             -Dsonar.projectKey=$SONAR_PROJECTKEY \
             -Dsonar.organization=$SONAR_ORG \
             -Dsonar.sources=frontend/src \
+            -Dsonar.tests=frontend/src \
             -Dsonar.javascript.lcov.reportPaths=frontend/coverage/lcov.info \
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.login=$SONAR_TOKEN \
-            -Dsonar.projectName="Sellr Frontend" \
+            -Dsonar.branch.name=main \
             -Dsonar.scm.provider=git
 
       - name: Export SonarCloud Frontend Issues
         run: |
           curl -s -u $SONAR_TOKEN_FRONTEND: \
-            "https://sonarcloud.io/api/issues/search?componentKeys=$SONAR_PROJECTKEY_FRONTEND" \
+            "https://sonarcloud.io/api/issues/search?componentKeys=$SONAR_PROJECTKEY" \
             -o sonar-frontend-report.json
 
       - name: Upload Frontend Report
@@ -139,7 +140,7 @@ jobs:
       - name: Export SonarCloud Backend Issues
         run: |
           curl -s -u $SONAR_TOKEN: \
-            "https://sonarcloud.io/api/issues/search?componentKeys=$SONAR_PROJECTKEY" \
+            "https://sonarcloud.io/api/issues/search?componentKeys=$SONAR_PROJECTKEY&ps=500" \
             -o sonar-backend-report.json
 
       - name: Upload Backend Report
@@ -195,9 +196,9 @@ jobs:
         uses: zaproxy/action-baseline@v0.10.0
         with:
           target: 'https://sellr.site'
-          cmd_options: '-r zap_report.html -J zap_report.json'
+          cmd_options: '-J zap_report.json -r zap_report.html'
 
-      - name: Upload ZAP HTML Report (optional)
+      - name: Upload ZAP HTML Report
         uses: actions/upload-artifact@v4
         with:
           name: zap-report-html
