@@ -276,7 +276,9 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
           python <<EOF
-          import os, json, openai
+          import os
+          import json
+          import openai
 
           # Load merged security report
           with open("merged_reports/security-report.json") as f:
@@ -284,7 +286,7 @@ jobs:
 
           # Create prompt
           prompt = f"""
-          You are a cybersecurity expert. Analyze this combined SAST (frontend & backend) and DAST report:
+          Analyze this combined SAST (frontend & backend) and DAST report:
           {json.dumps(report, indent=2)}
 
           For each issue, provide:
@@ -293,14 +295,17 @@ jobs:
           Respond in JSON format with clear fields: component, issue, severity, recommendation.
           """
 
-          # Send to OpenAI
-          response = openai.ChatCompletion.create(
+          # Send to OpenAI using the new API
+          response = openai.chat.completions.create(
               model="gpt-4",
-              messages=[{"role": "user", "content": prompt}],
+              messages=[
+                  {"role": "system", "content": "You are a cybersecurity expert."},
+                  {"role": "user", "content": prompt}
+              ],
               temperature=0
           )
 
-          ai_output = response['choices'][0]['message']['content']
+          ai_output = response.choices[0].message.content
 
           # Save AI recommendations
           os.makedirs("merged_reports", exist_ok=True)
