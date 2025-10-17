@@ -72,7 +72,7 @@ jobs:
       - name: Export SonarCloud Frontend Issues
         run: |
           curl -s -u $SONAR_TOKEN_FRONTEND: \
-            "https://sonarcloud.io/api/issues/search?componentKeys=$SONAR_PROJECTKEY" \
+            "https://sonarcloud.io/api/issues/search?componentKeys=nus-iss-team-2_sellr-frontend&branch=main" \
             -o sonar-frontend-report.json
 
       - name: Upload Frontend Report
