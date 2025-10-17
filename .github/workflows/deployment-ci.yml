@@ -276,43 +276,78 @@ jobs:
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
+      - name: AI Remediation Suggestions
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
           python <<EOF
           import os
           import json
           import openai
+          import math
+
+          openai.api_key = os.environ["OPENAI_API_KEY"]
 
           # Load merged security report
           with open("merged_reports/security-report.json") as f:
               report = json.load(f)
 
-          # Create prompt
-          prompt = f"""
-          Analyze this combined SAST (frontend & backend) and DAST report:
-          {json.dumps(report, indent=2)}
+          # Function to condense issues (keep only key fields)
+          def condense_issues(component_report):
+              condensed = []
+              for issue in component_report.get("issues", []):
+                  condensed.append({
+                      "id": issue.get("id"),
+                      "title": issue.get("title") or issue.get("message"),
+                      "severity": issue.get("severity"),
+                      "component": issue.get("component")
+                  })
+              return condensed
 
-          For each issue, provide:
-          1. Severity (Low/Medium/High/Critical)
-          2. Recommended remediation steps
-          Respond in JSON format with clear fields: component, issue, severity, recommendation.
-          """
+          all_issues = []
+          for comp in ["frontend", "backend", "dast"]:
+              all_issues += condense_issues(report.get(comp, {}))
 
-          # Send to OpenAI using the new API
-          response = openai.chat.completions.create(
-              model="gpt-3.5-turbo",
-              messages=[
-                  {"role": "system", "content": "You are a cybersecurity expert."},
-                  {"role": "user", "content": prompt}
-              ],
-              temperature=0
-          )
+          # Chunk issues to avoid exceeding token limits
+          chunk_size = 200  # adjust if still too large
+          num_chunks = math.ceil(len(all_issues)/chunk_size)
+          all_recommendations = []
 
-          ai_output = response.choices[0].message.content
+          for i in range(num_chunks):
+              chunk = all_issues[i*chunk_size:(i+1)*chunk_size]
+              prompt = f"""
+              Analyze these security issues:
+              {json.dumps(chunk, indent=2)}
+
+              For each issue, provide:
+              1. Severity (Low/Medium/High/Critical)
+              2. Recommended remediation steps
+              Respond in JSON format with fields: component, id, title, severity, recommendation.
+              """
+
+              response = openai.chat.completions.create(
+                  model="gpt-3.5-turbo",
+                  messages=[
+                      {"role": "system", "content": "You are a cybersecurity expert."},
+                      {"role": "user", "content": prompt}
+                  ],
+                  temperature=0
+              )
+
+              try:
+                  chunk_output = json.loads(response.choices[0].message.content)
+              except json.JSONDecodeError:
+                  # fallback: wrap raw text if JSON parsing fails
+                  chunk_output = {"raw_text": response.choices[0].message.content}
+
+              all_recommendations.extend(chunk_output if isinstance(chunk_output, list) else [chunk_output])
 
           # Save AI recommendations
           os.makedirs("merged_reports", exist_ok=True)
           with open("merged_reports/ai-recommendations.json", "w") as f:
-              f.write(ai_output)
+              json.dump(all_recommendations, f, indent=2)
           EOF
+
 
       # -------------------------
       # Upload AI Recommendations
