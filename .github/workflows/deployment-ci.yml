@@ -71,7 +71,7 @@ jobs:
       - name: Export SonarCloud Frontend Issues
         run: |
           curl -s -u $SONAR_TOKEN_FRONTEND: \
-            "https://sonarcloud.io/api/issues/search?componentKeys=$SONAR_PROJECTKEY_FRONTEND&resolved=false" \
+            "https://sonarcloud.io/api/issues/search?componentKeys=$SONAR_PROJECTKEY_FRONTEND" \
             -o sonar-frontend-report.json
 
       - name: Upload Frontend Report
@@ -139,7 +139,7 @@ jobs:
       - name: Export SonarCloud Backend Issues
         run: |
           curl -s -u $SONAR_TOKEN: \
-            "https://sonarcloud.io/api/issues/search?componentKeys=$SONAR_PROJECTKEY&resolved=false" \
+            "https://sonarcloud.io/api/issues/search?componentKeys=$SONAR_PROJECTKEY" \
             -o sonar-backend-report.json
 
       - name: Upload Backend Report
@@ -195,7 +195,7 @@ jobs:
         uses: zaproxy/action-baseline@v0.10.0
         with:
           target: 'https://sellr.site'
-          cmd_options: '-r zap_report.html -f json -o zap_report.json'
+          cmd_options: '-r zap_report.html -J zap_report.json'
 
       - name: Upload ZAP HTML Report (optional)
         uses: actions/upload-artifact@v4
