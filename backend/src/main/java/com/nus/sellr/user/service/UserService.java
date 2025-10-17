@@ -90,7 +90,8 @@ public class UserService {
             User user = userOptional.get();
 
             if (user.isDisabled()) {
-                throw new RuntimeException("User account is disabled.");
+                throw new IllegalArgumentException("User account is disabled by an Admin.\n" +
+                        "Please contact support if you wish to enable your account.");
             }
 
             if (passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {

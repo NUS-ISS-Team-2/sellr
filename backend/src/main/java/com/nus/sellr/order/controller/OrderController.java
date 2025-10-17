@@ -84,7 +84,7 @@ public class OrderController {
     }
 
     @PostMapping("/dispute")
-    public ResponseEntity<?> raiseDispute(@RequestBody DisputeRequestDTO request) {
+    public ResponseEntity<?> raiseDispute(@RequestBody DisputeRequestDTO request){
         try {
             orderService.raiseDispute(
                     request.getOrderId(),
@@ -95,9 +95,6 @@ public class OrderController {
             return ResponseEntity.ok("Dispute raised successfully.");
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("An unexpected error occurred.");
         }
     }
 

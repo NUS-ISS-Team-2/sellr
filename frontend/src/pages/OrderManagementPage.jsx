@@ -90,13 +90,16 @@ export default function OrderManagementPage() {
 
     if (!orderItems || orderItems.length === 0) return "N/A";
 
+    const hasDispute = orderItems.some(item => item.status === "DISPUTING");
     const allShippedOrDelivered = orderItems.every(
-      item => item.status === "SHIPPED" || item.status === "DELIVERED"
+      item => item.status === "SHIPPED" || item.status === "DELIVERED" || item.status === "RESOLVED"
     );
 
-    if (allShippedOrDelivered) return "✅ Done (shipped)";
+    if (hasDispute) return "⚠️ Some Items Disputed";
+    if (allShippedOrDelivered) return "✅ Done";
     return "⏳ Pending";
   };
+
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">

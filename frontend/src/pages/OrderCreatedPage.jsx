@@ -5,6 +5,7 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import DisputeModal from "../components/DisputeModal";
 import { API_BASE_URL } from "../config";
+import StatusModal from "../components/StatusModal";
 
 const API_URL = `${API_BASE_URL}/orders`;
 
@@ -13,6 +14,9 @@ export default function OrderCreatedPage() {
   const [loading, setLoading] = useState(true);
   const [disputeModalOpen, setDisputeModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalTitle, setModalTitle] = useState("");
+  const [modalMessage, setModalMessage] = useState("");
 
   const location = useLocation();
   const orderId = location.state?.orderId;
@@ -34,6 +38,13 @@ export default function OrderCreatedPage() {
     if (orderId) fetchOrder();
   }, [orderId]);
 
+
+  const openModal = (title, message) => {
+    setModalTitle(title);
+    setModalMessage(message);
+    setModalOpen(true);
+  };
+
   // Mark item as delivered
   const handleMarkAsDelivered = async (productId) => {
     try {
@@ -47,7 +58,7 @@ export default function OrderCreatedPage() {
       setOrder(res.data);
     } catch (error) {
       console.error("Error marking as delivered:", error);
-      alert("Failed to mark item as delivered. Please try again.");
+      openModal("Error", "Failed to mark item as delivered. Please try again.");
     }
   };
 
@@ -187,6 +198,13 @@ export default function OrderCreatedPage() {
           <Link to="/myorders" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">View All Orders</Link>
         </div>
       </main>
+
+      <StatusModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title={modalTitle}
+        message={modalMessage}
+      />
 
       <DisputeModal
         isOpen={disputeModalOpen}

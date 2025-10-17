@@ -15,7 +15,9 @@ export default function OrdersPage() {
     useEffect(() => {
         async function fetchOrders() {
             try {
-                const res = await axios.get(`${API_BASE_URL}/orders/user/${userId}`); // adjust endpoint if needed
+                const res = await axios.get(`${API_BASE_URL}/orders/user/${userId}`);
+                console.log(`${API_BASE_URL}/orders/user/${userId}`)
+                console.log(res.data)
                 setOrders(res.data);
             } catch (err) {
                 console.error("Error fetching orders:", err);
