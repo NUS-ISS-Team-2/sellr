@@ -329,7 +329,7 @@ jobs:
               - Escape any | characters in titles or recommendations.
               - Return **one row per issue**, even if multiple issues are similar.
               - Keep the table concise and user-friendly.
-
+              """
               response = openai.chat.completions.create(
                   model="gpt-3.5-turbo",
                   messages=[
