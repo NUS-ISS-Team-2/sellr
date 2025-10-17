@@ -270,7 +270,7 @@ jobs:
         run: pip install openai
 
       # -------------------------
-      # AI Remediation Suggestions
+      # AI Remediation Suggestions (fixed, syntax-error-free)
       # -------------------------
       - name: AI Remediation Suggestions
         env:
@@ -354,16 +354,14 @@ jobs:
           with open(json_path, "w") as f:
               json.dump(all_recommendations, f, indent=2)
 
-          # Generate Markdown report safely
+          # Generate Markdown report safely (fixed f-string)
           md_lines = ["| Component | Title | Severity | Recommendation |", "|---|---|---|---|"]
           for issue in all_recommendations:
               component = issue.get("component", "")
-              title = issue.get("title") or issue.get("raw_text", "")
+              title = (issue.get("title") or issue.get("raw_text", "")).replace("|", "\\|")
+              recommendation = (issue.get("recommendation") or issue.get("raw_text", "")).replace("|", "\\|")
               severity = issue.get("severity", "")
-              recommendation = issue.get("recommendation") or issue.get("raw_text", "")
-              md_lines.append(
-                  f"| {component} | {title.replace('|', '\\|')} | {severity} | {recommendation.replace('|', '\\|')} |"
-              )
+              md_lines.append(f"| {component} | {title} | {severity} | {recommendation} |")
 
           md_path = "merged_reports/ai-recommendations.md"
           with open(md_path, "w") as f:
