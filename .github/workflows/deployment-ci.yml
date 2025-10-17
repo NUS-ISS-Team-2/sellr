@@ -62,8 +62,6 @@ jobs:
             -Dsonar.projectKey=$SONAR_PROJECTKEY \
             -Dsonar.organization=$SONAR_ORG \
             -Dsonar.sources=frontend/src \
-            -Dsonar.tests=frontend/src/__tests__ \
-            -Dsonar.exclusions=frontend/src/setupTests.js \
             -Dsonar.javascript.lcov.reportPaths=frontend/coverage/lcov.info \
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.login=$SONAR_TOKEN \
