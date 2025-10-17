@@ -294,8 +294,12 @@ jobs:
 
           # Function to condense issues (keep only key fields)
           def condense_issues(component_report):
+              if not component_report:
+                  return []  # return empty list if component is None
               condensed = []
               for issue in component_report.get("issues", []):
+                  if not issue:
+                      continue
                   condensed.append({
                       "id": issue.get("id"),
                       "title": issue.get("title") or issue.get("message"),
