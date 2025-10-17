@@ -140,7 +140,7 @@ jobs:
       - name: Export SonarCloud Backend Issues
         run: |
           curl -s -u $SONAR_TOKEN: \
-            "https://sonarcloud.io/api/issues/search?componentKeys=$SONAR_PROJECTKEY&ps=500" \
+            "https://sonarcloud.io/api/issues/search?componentKeys=NUS-ISS-Team-2_sellr" \
             -o sonar-backend-report.json
 
       - name: Upload Backend Report
