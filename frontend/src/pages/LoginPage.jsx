@@ -6,44 +6,66 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { UserContext } from "../context/UserContext";
 import { useCart } from "../context/CartContext";
-import { API_BASE_URL } from "../config";  
+import { API_BASE_URL } from "../config";
+import StatusModal from "../components/StatusModal";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const navigate = useNavigate(); 
-  const { login } = useContext(UserContext); // get login function from context
+  const navigate = useNavigate();
+  const { login } = useContext(UserContext);
   const { fetchCart } = useCart();
+
+  // ✅ StatusModal state
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalTitle, setModalTitle] = useState("");
+  const [modalMessage, setModalMessage] = useState("");
+
+  const openModal = (title, message) => {
+    setModalTitle(title);
+    setModalMessage(message);
+    setModalOpen(true);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       const response = await axios.post(`${API_BASE_URL}/users/login`, {
-          identifier: email,
-          password: password, 
-      })
-
-      console.log(response);
+        identifier: email,
+        password: password,
+      });
 
       fetchCart(response.data.id);
 
       const token = response.data.token;
       if (!token) {
-        alert("Login failed. Please try again.");
+        openModal("Login Failed", "Incorrect credentials or account does not exist.");
       } else {
-        login(token,  response.data.id); // call login function from context
+        login(token, response.data.id);
         navigate("/");
       }
     } catch (error) {
       console.error("Error logging in", error.response?.data || error.message);
-      alert("Login failed: " + (error.response?.data?.message || "Please try again."));
+      openModal(
+        "Login Failed",
+        error.response?.data?.error || "Login failed. Please try again."
+      );
     }
   };
 
   return (
     <div className="flex flex-col min-h-screen bg-blue-600">
       <Header />
+
+      {/* ✅ Status Modal */}
+      <StatusModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title={modalTitle}
+        message={modalMessage}
+      />
+
       <main className="flex-1 flex items-center justify-center">
         <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-md">
           <h2 className="text-2xl font-bold mb-6 text-center">Login to sellr</h2>
@@ -76,10 +98,13 @@ export default function LoginPage() {
           </form>
           <p className="text-center text-sm text-gray-500 mt-4">
             Don't have an account?{" "}
-            <Link to="/register" className="text-blue-600 hover:underline">Sign up</Link>
+            <Link to="/register" className="text-blue-600 hover:underline">
+              Sign up
+            </Link>
           </p>
         </div>
       </main>
+
       <Footer />
     </div>
   );

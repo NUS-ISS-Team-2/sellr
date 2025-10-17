@@ -54,8 +54,8 @@ jobs:
 
       - name: SonarCloud Scan (Frontend)
         env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_PROJECTKEY: ${{ secrets.SONAR_PROJECTKEY }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_FRONTEND }}
+          SONAR_PROJECTKEY: ${{ secrets.SONAR_PROJECTKEY_FRONTEND }}
           SONAR_ORG: ${{ secrets.SONAR_ORG }}
         run: |
           npx sonarqube-scanner \
@@ -67,6 +67,19 @@ jobs:
             -Dsonar.login=$SONAR_TOKEN \
             -Dsonar.projectName="Sellr Frontend" \
             -Dsonar.scm.provider=git
+
+      - name: Export SonarCloud Frontend Issues
+        run: |
+          curl -s -u $SONAR_TOKEN_FRONTEND: \
+            "https://sonarcloud.io/api/issues/search?componentKeys=$SONAR_PROJECTKEY_FRONTEND&resolved=false" \
+            -o sonar-frontend-report.json
+
+      - name: Upload Frontend Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: sonar-frontend-report
+          path: sonar-frontend-report.json
+
 
   # -------------------------
   # Backend build/test with JaCoCo coverage + SonarCloud
@@ -123,6 +136,19 @@ jobs:
           -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
           -Dspring.profiles.active=prod
 
+      - name: Export SonarCloud Backend Issues
+        run: |
+          curl -s -u $SONAR_TOKEN: \
+            "https://sonarcloud.io/api/issues/search?componentKeys=$SONAR_PROJECTKEY&resolved=false" \
+            -o sonar-backend-report.json
+
+      - name: Upload Backend Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: sonar-backend-report
+          path: sonar-backend-report.json
+
+
   # -------------------------
   # Deployment (only on push to main)
   # -------------------------
@@ -152,3 +178,140 @@ jobs:
             docker compose down
             docker compose up -d --build
             echo "Deployment completed"
+
+  # -------------------------
+  # DAST Scan (OWASP ZAP)
+  # -------------------------
+  dast-scan:
+    runs-on: ubuntu-latest
+    needs: deploy
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Run OWASP ZAP Baseline Scan
+        uses: zaproxy/action-baseline@v0.10.0
+        with:
+          target: 'https://sellr.site'
+          cmd_options: '-r zap_report.html -f json -o zap_report.json'
+
+      - name: Upload ZAP HTML Report (optional)
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-report-html
+          path: zap_report.html
+
+      - name: Upload ZAP JSON Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-report-json
+          path: zap_report.json
+
+  # -------------------------
+  # AI Security Analysis
+  # -------------------------
+  ai-analysis:
+    runs-on: ubuntu-latest
+    needs: [frontend-build, backend-build, dast-scan]
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      # -------------------------
+      # Download security reports
+      # -------------------------
+      - name: Download Frontend Report
+        uses: actions/download-artifact@v4
+        with:
+          name: sonar-frontend-report
+          path: reports/frontend
+
+      - name: Download Backend Report
+        uses: actions/download-artifact@v4
+        with:
+          name: sonar-backend-report
+          path: reports/backend
+
+      - name: Download DAST Report
+        uses: actions/download-artifact@v4
+        with:
+          name: zap-report-json
+          path: reports/dast
+
+      # -------------------------
+      # Merge JSON reports
+      # -------------------------
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Merge Reports
+        run: |
+          mkdir -p merged_reports
+          jq -s '{frontend: .[0], backend: .[1], dast: .[2]}' \
+            reports/frontend/sonar-frontend-report.json \
+            reports/backend/sonar-backend-report.json \
+            reports/dast/zap_report.json \
+            > merged_reports/security-report.json
+
+      # -------------------------
+      # Install Python & OpenAI SDK
+      # -------------------------
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: Install Dependencies
+        run: pip install openai
+
+      # -------------------------
+      # AI Remediation Suggestions
+      # -------------------------
+      - name: AI Remediation Suggestions
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          python <<EOF
+          import os, json, openai
+
+          # Load merged security report
+          with open("merged_reports/security-report.json") as f:
+              report = json.load(f)
+
+          # Create prompt
+          prompt = f"""
+          You are a cybersecurity expert. Analyze this combined SAST (frontend & backend) and DAST report:
+          {json.dumps(report, indent=2)}
+
+          For each issue, provide:
+          1. Severity (Low/Medium/High/Critical)
+          2. Recommended remediation steps
+          Respond in JSON format with clear fields: component, issue, severity, recommendation.
+          """
+
+          # Send to OpenAI
+          response = openai.ChatCompletion.create(
+              model="gpt-4",
+              messages=[{"role": "user", "content": prompt}],
+              temperature=0
+          )
+
+          ai_output = response['choices'][0]['message']['content']
+
+          # Save AI recommendations
+          os.makedirs("merged_reports", exist_ok=True)
+          with open("merged_reports/ai-recommendations.json", "w") as f:
+              f.write(ai_output)
+          EOF
+
+      # -------------------------
+      # Upload AI Recommendations
+      # -------------------------
+      - name: Upload AI Recommendations
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-recommendations
+          path: merged_reports/ai-recommendations.json
+
