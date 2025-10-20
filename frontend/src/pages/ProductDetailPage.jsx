@@ -184,7 +184,7 @@ export default function ProductDetailPage() {
                     Sold by: <span className="font-medium">{product.sellerName}</span>
                   </p>
                 )}
-                <p className="text-gray-700 mt-3">{product?.description || "No description provided."}</p>
+                <p className="text-gray-700 mt-3 whitespace-pre-wrap">{product?.description || "No description provided."}</p>
                 <p className="text-2xl font-bold mt-4">${Number(product?.price ?? 0).toLocaleString()}</p>
 
 
