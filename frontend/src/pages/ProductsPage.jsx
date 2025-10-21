@@ -49,7 +49,10 @@ export default function ProductsPage() {
         sort: "createdAt,desc",
         signal: controller.signal,
       })
-        .then((res) => setData(res))
+        .then((res) => {
+          setData(res)
+          console.log(res)
+        })
         .catch((err) => {
           if (err.name !== "CanceledError") console.error("Failed to fetch products:", err);
         })
@@ -61,6 +64,7 @@ export default function ProductsPage() {
 
   const products = data?.content || [];
   const totalPages = data?.totalPages || 1;
+  const activeProducts = products.filter((p) => !p.deleted);
 
   return (
     <>
@@ -113,7 +117,7 @@ export default function ProductsPage() {
               <div className="p-4 text-gray-500">No products found.</div>
             )}
 
-            <ProductGrid products={products} />
+            <ProductGrid products={activeProducts} />
 
             <Pagination
               page={page}

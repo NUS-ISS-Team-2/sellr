@@ -211,7 +211,8 @@ class OrderServiceTest {
         when(productService.getProductEntityById("prod1")).thenReturn(product);
         when(productService.getProductById("prod1")).thenReturn(
                 new com.nus.sellr.product.dto.ProductResponse(
-                        "prod1", "Product 1", "Desc", 100, "url", "Category", 10, "seller1"
+                        "prod1", "Product 1", "Desc", 100, "url",
+                        "Category", 10, "seller1", false
                 )
         );
     }
@@ -279,7 +280,7 @@ class OrderServiceTest {
         when(productService.getProductById("prod1"))
                 .thenReturn(new ProductResponse(
                         "prod1", "Product 1", "Some description", 100.0,
-                        "url", "Category A", 10, "seller1"
+                        "url", "Category A", 10, "seller1", false
                 ));
 
         // ------------------ Mock seller repository ------------------
@@ -354,7 +355,7 @@ class OrderServiceTest {
         when(productService.getProductById(productId))
                 .thenReturn(new ProductResponse(
                         productId, "Product 1", "Some description", 100.0,
-                        "url", "Category A", 10, "seller1"
+                        "url", "Category A", 10, "seller1", false
                 ));
     }
 
@@ -440,7 +441,8 @@ class OrderServiceTest {
 
         // Mock productService for toResponseDTO
         when(productService.getProductById("prod1")).thenReturn(
-                new ProductResponse("prod1", "Product 1", "Desc", 100, "url", "Category A", 10, "seller1")
+                new ProductResponse("prod1", "Product 1", "Desc",
+                        100, "url", "Category A", 10, "seller1", false)
         );
 
         List<OrderResponseDTO> results = orderService.getOrdersForSeller("seller1");

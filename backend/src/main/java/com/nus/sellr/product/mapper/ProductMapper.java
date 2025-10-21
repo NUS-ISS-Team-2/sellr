@@ -24,6 +24,7 @@ public class ProductMapper {
         dto.setStock(product.getStock());
         dto.setSellerId(product.getSellerId());
         dto.setLowStock(product.getStock() < 20);
+        dto.setDeleted(product.isDeleted());
         return dto;
     }
 

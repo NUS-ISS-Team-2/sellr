@@ -32,13 +32,22 @@ export default function ProductCard({ product, onView, onEdit, onDelete }) {
           </button>
           <button
             onClick={() => onEdit(product)}
-            className="w-full bg-yellow-500 hover:bg-yellow-600 text-white py-2 rounded-lg transition"
+            disabled={product.deleted}
+            className={`w-full py-2 rounded-lg text-white transition ${product.deleted
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-yellow-500 hover:bg-yellow-600"
+              }`}
           >
             Edit
           </button>
+
           <button
             onClick={() => onDelete(product.id)}
-            className="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg transition"
+            disabled={product.deleted}
+            className={`w-full py-2 rounded-lg text-white transition ${product.deleted
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-red-600 hover:bg-red-700"
+              }`}
           >
             Delete
           </button>

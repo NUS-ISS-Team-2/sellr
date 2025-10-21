@@ -157,14 +157,28 @@ class ProductServiceTest {
     }
 
     @Test
-    void testDeleteProduct_exists() {
+    void testDeleteProduct_exists_softDelete() {
         String id = "p1";
-        when(productRepository.existsById(id)).thenReturn(true);
+
+        // Mock existing product
+        Product product = new Product();
+        product.setId(id);
+        product.setDeleted(false);
+
+        when(productRepository.findById(id)).thenReturn(Optional.of(product));
 
         productService.deleteProduct(id);
 
-        verify(productRepository, times(1)).deleteById(id);
+        // Verify that the product's deleted flag was set to true
+        assertTrue(product.isDeleted());
+
+        // Verify that save was called
+        verify(productRepository, times(1)).save(product);
+
+        // Optional: verify that deleteById is NOT called
+        verify(productRepository, never()).deleteById(any());
     }
+
 
     @Test
     void testDeleteProduct_notExists() {

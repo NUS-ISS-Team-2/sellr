@@ -97,10 +97,11 @@ public class ProductService {
 
     // Delete product
     public void deleteProduct(String id) {
-        if (!productRepository.existsById(id)) {
-            throw new IllegalArgumentException("Product not found with id: " + id);
-        }
-        productRepository.deleteById(id);
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Product not found with id: " + id));
+
+        product.setDeleted(true);  // mark as deleted
+        productRepository.save(product);
     }
 
     // Search product
@@ -153,6 +154,7 @@ public class ProductService {
     }
 
     private ProductResponse toResponse(Product product) {
+        System.out.println(product.isDeleted());
         return new ProductResponse(
                 product.getId(),
                 product.getName(),
@@ -161,7 +163,8 @@ public class ProductService {
                 product.getImageUrl(),
                 product.getCategory(),
                 product.getStock(),
-                product.getSellerId()
+                product.getSellerId(),
+                product.isDeleted()
         );
     }
 

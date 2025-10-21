@@ -17,6 +17,8 @@ public class Product {
     private String category;
     private int stock;
     private String sellerId;
+    private boolean deleted;
+
 
     public Product() {
     }

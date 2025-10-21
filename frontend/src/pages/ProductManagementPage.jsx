@@ -63,7 +63,11 @@ export default function ProductManagementPage() {
     if (!confirmDelete) return;
     try {
       await fetch(`${API_URL}/${confirmDelete.id}`, { method: "DELETE" });
-      setProducts((prev) => prev.filter((p) => p.id !== confirmDelete.id));
+      setProducts((prev) =>
+        prev.map((p) =>
+          p.id === confirmDelete.id ? { ...p, deleted: true } : p
+        )
+      );
     } catch (err) {
       console.error("Failed to delete product:", err);
     } finally {
@@ -130,7 +134,9 @@ export default function ProductManagementPage() {
                         <td className="px-4 py-4">${p.price.toFixed(2)}</td>
                         <td className="px-4 py-4">{p.stock}</td>
                         <td className="px-4 py-4">
-                          {isOutOfStock ? (
+                          {p.deleted ? (
+                            <span className="text-red-600 font-semibold">Deleted</span>
+                          ) : isOutOfStock ? (
                             <span className="text-red-600 font-semibold">Out of Stock</span>
                           ) : isLowStock ? (
                             <span className="text-yellow-600 font-semibold">⚠️ Low</span>
@@ -141,7 +147,9 @@ export default function ProductManagementPage() {
                         <td className="px-4 py-4 text-right space-x-2">
                           <button
                             onClick={() => setViewProduct(p)}
-                            className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+                            disabled={p.deleted}
+                            className={`px-2 py-1 rounded text-white ${p.deleted ? "bg-gray-400 cursor-not-allowed" : "bg-blue-500 hover:bg-blue-600"
+                              }`}
                           >
                             View
                           </button>
@@ -150,17 +158,22 @@ export default function ProductManagementPage() {
                               setEditingProduct(p);
                               setShowForm(true);
                             }}
-                            className="px-2 py-1 bg-yellow-400 rounded hover:bg-yellow-500"
+                            disabled={p.deleted}
+                            className={`px-2 py-1 rounded ${p.deleted ? "bg-gray-400 cursor-not-allowed" : "bg-yellow-400 hover:bg-yellow-500"
+                              }`}
                           >
                             Edit
                           </button>
                           <button
                             onClick={() => handleDeleteProduct(p.id)}
-                            className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                            disabled={p.deleted}
+                            className={`px-2 py-1 rounded text-white ${p.deleted ? "bg-gray-400 cursor-not-allowed" : "bg-red-500 hover:bg-red-600"
+                              }`}
                           >
                             Delete
                           </button>
                         </td>
+
                       </tr>
                     );
                   })
