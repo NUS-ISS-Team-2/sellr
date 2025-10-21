@@ -16,6 +16,7 @@ public class ProductResponse {
     private String sellerId;
     private String sellerName;
     private boolean lowStock; // true if stock < 20
+    private boolean deleted;
 
 
     public ProductResponse() {
@@ -29,7 +30,8 @@ public class ProductResponse {
             String imageUrl,
             String category,
             int stock,
-            String sellerId) {
+            String sellerId,
+            boolean deleted) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -39,6 +41,7 @@ public class ProductResponse {
         this.stock = stock;
         this.sellerId = sellerId;
         this.lowStock = stock < 20; // automatically set lowStock
+        this.deleted = deleted;
     }
 
     public void setStock(int stock) {
