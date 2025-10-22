@@ -33,7 +33,7 @@ export default function ProductGrid({ products = [] }) {
                   className="w-full h-48 object-cover"
                 />
                 <div className="p-4">
-                  <h4 className="font-semibold text-lg">{product.name}</h4>
+                  <h4 className="font-semibold text-lg line-clamp-2">{product.name}</h4>
                   <p className="text-gray-600">{truncate(product.description, 80)}</p>
                   <p className="text-gray-800 font-bold mt-2">
                     ${Number(product.price ?? 0).toLocaleString()}

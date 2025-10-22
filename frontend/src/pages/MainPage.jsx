@@ -57,7 +57,13 @@ export default function MainPage() {
     if (!confirmDelete) return;
     try {
       await axios.delete(`${API_BASE_URL}/products/${confirmDelete.id}`);
-      setProducts((prev) => prev.filter((p) => p.id !== confirmDelete.id));
+      
+      // Update product in state instead of removing it
+      setProducts((prev) =>
+        prev.map((p) =>
+          p.id === confirmDelete.id ? { ...p, deleted: true } : p
+        )
+      );
     } catch (err) {
       console.error("Failed to delete product:", err);
     } finally {

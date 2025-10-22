@@ -53,6 +53,7 @@ export default function ProductDetailPage() {
       try {
         const p = await getProductById(id);
         if (ignore) return;
+        console.log(p);
         setProduct(p);
         setLoading(false);
 
@@ -184,13 +185,16 @@ export default function ProductDetailPage() {
                     Sold by: <span className="font-medium">{product.sellerName}</span>
                   </p>
                 )}
-                <p className="text-gray-700 mt-3">{product?.description || "No description provided."}</p>
+                <p className="text-gray-700 mt-3 whitespace-pre-wrap">{product?.description || "No description provided."}</p>
                 <p className="text-2xl font-bold mt-4">${Number(product?.price ?? 0).toLocaleString()}</p>
 
 
-                {/* Stock Info */}
                 <div className="mt-2 flex items-center gap-2">
-                  {inStock ? (
+                  {product.deleted ? (
+                    <span className="inline-block text-sm px-2 py-1 rounded-full bg-red-100 text-red-700">
+                      Seller discontinued this product
+                    </span>
+                  ) : inStock ? (
                     <span className="inline-block text-sm px-2 py-1 rounded-full bg-green-100 text-green-700">
                       In Stock {product.lowStock && "⚠️ Low"}
                     </span>
@@ -201,8 +205,6 @@ export default function ProductDetailPage() {
                   )}
                 </div>
 
-
-
                 {/* Cart Controls */}
                 <div className="mt-5 flex flex-col gap-2">
                   {quantity === 0 ? (
@@ -211,8 +213,8 @@ export default function ProductDetailPage() {
                         if (!userId) return navigate("/login");
                         addToCart(userId, product);
                       }}
-                      disabled={!inStock || isStaff}
-                      className={`w-full py-2 rounded text-white ${!inStock || isStaff ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
+                      disabled={!inStock || isStaff || product.deleted}
+                      className={`w-full py-2 rounded text-white ${!inStock || isStaff || product.deleted? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
                         }`}
                     >
                       Add to Cart
@@ -255,7 +257,7 @@ export default function ProductDetailPage() {
                         : "bg-white text-rose-600 hover:bg-rose-50"
                       }`}
                     onClick={handleAddToWishlist}
-                    disabled={isStaff || inWishlist || !userId}
+                    disabled={isStaff || inWishlist || !userId || product.deleted} 
                     aria-label={inWishlist ? "In wishlist" : "Add to wishlist"}
                   >
                     <svg

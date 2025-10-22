@@ -6,6 +6,7 @@ import { UserContext } from "../context/UserContext";
 import { useNavigate } from "react-router-dom";
 import AddressForm from "../components/AddressForm";
 import PaymentForm from "../components/PaymentForm";
+import StatusModal from "../components/StatusModal";
 
 export default function CartPage() {
   const { cartItems, updateCart, removeFromCart } = useCart();
@@ -21,6 +22,20 @@ export default function CartPage() {
   });
   const [paymentMethod, setPaymentMethod] = useState("PayNow");
   const [paymentDetails, setPaymentDetails] = useState({});
+
+  const [modal, setModal] = useState({
+    isOpen: false,
+    title: "",
+    message: "",
+  });
+
+  const openModal = (title, message) => {
+    setModal({ isOpen: true, title, message });
+  };
+
+  const closeModal = () => {
+    setModal({ ...modal, isOpen: false });
+  };
 
   if (!cartItems) {
     return (
@@ -91,7 +106,7 @@ export default function CartPage() {
       !address.city ||
       !address.stateZipCountry
     ) {
-      alert("Please fill in all address fields.");
+      openModal("Missing Address", "Please fill in all address fields.");
       return;
     }
 
@@ -107,7 +122,7 @@ export default function CartPage() {
     };
 
     if (!validPayment[paymentMethod]) {
-      alert("Please fill in all payment details.");
+      openModal("Missing Payment", "Please fill in all payment fields.");
       return;
     }
 
@@ -179,6 +194,13 @@ export default function CartPage() {
         </div>
       </main>
       <Footer />
+
+      <StatusModal
+        isOpen={modal.isOpen}
+        onClose={closeModal}
+        title={modal.title}
+        message={modal.message}
+      />
     </div>
   );
 }
