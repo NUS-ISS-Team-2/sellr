@@ -154,7 +154,6 @@ public class ProductService {
     }
 
     private ProductResponse toResponse(Product product) {
-        System.out.println(product.isDeleted());
         return new ProductResponse(
                 product.getId(),
                 product.getName(),
