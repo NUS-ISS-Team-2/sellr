@@ -22,15 +22,4 @@ public class Product {
 
     public Product() {
     }
-
-    public Product(String name, String description, double price, String imageUrl, String category,
-                   int stock, String sellerId) {
-        this.name = name;
-        this.description = description;
-        this.price = price;
-        this.imageUrl = imageUrl;
-        this.category = category;
-        this.stock = stock;
-        this.sellerId = sellerId;
-    }
 }
