@@ -12,5 +12,6 @@ public class CreateUserRequest {
     private Role role;
 
     public CreateUserRequest() {
+        // Default constructor required by Spring Data and other serialization frameworks
     }
 }

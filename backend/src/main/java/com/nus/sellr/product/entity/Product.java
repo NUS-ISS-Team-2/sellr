@@ -21,5 +21,6 @@ public class Product {
 
 
     public Product() {
+        // Default constructor required by Spring Data and other serialization frameworks
     }
 }
