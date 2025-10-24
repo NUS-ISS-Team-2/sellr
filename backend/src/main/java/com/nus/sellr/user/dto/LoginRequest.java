@@ -13,10 +13,6 @@ public class LoginRequest {
     private String identifier;
 
     public LoginRequest() {
-    }
-
-    public LoginRequest(String identifier, String password) {
-        this.identifier = identifier;
-        this.password = password;
+        // Default constructor required by Spring Data and other serialization frameworks
     }
 }

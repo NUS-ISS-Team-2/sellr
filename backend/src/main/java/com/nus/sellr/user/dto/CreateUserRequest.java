@@ -12,12 +12,6 @@ public class CreateUserRequest {
     private Role role;
 
     public CreateUserRequest() {
-    }
-
-    public CreateUserRequest(String username, String email, String password, Role role) {
-        this.username = username;
-        this.email = email;
-        this.password = password;
-        this.role = role;
+        // Default constructor required by Spring Data and other serialization frameworks
     }
 }
