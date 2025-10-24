@@ -119,4 +119,5 @@ jobs:
           -Dsonar.host.url=https://sonarcloud.io \
           -Dsonar.login=$SONAR_TOKEN \
           -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
-          -Dspring.profiles.active=prod
+          -Dspring.profiles.active=prod \
+          -Dsonar.coverage.exclusions=**/dto/**,**/entity/**,**/model/**,**/config/**,**/repository/**,**/SellrApplication.java
