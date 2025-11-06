@@ -168,14 +168,25 @@ export default function CartPage() {
                 handleCheckout();
               }}
             >
+              {/* Shipping Address */}
               <div>
-                <label className="block mb-1 font-medium">Shipping Address</label>
-                <AddressForm address={address} setAddress={setAddress} />
+                <label id="shipping-address-label" className="block mb-1 font-medium">
+                  Shipping Address
+                </label>
+                <AddressForm
+                  aria-labelledby="shipping-address-label"
+                  address={address}
+                  setAddress={setAddress}
+                />
               </div>
 
+              {/* Payment Details */}
               <div>
-                <label className="block mb-1 font-medium">Payment Details</label>
+                <label id="payment-details-label" className="block mb-1 font-medium">
+                  Payment Details
+                </label>
                 <PaymentForm
+                  aria-labelledby="payment-details-label"
                   paymentMethod={paymentMethod}
                   setPaymentMethod={setPaymentMethod}
                   paymentDetails={paymentDetails}

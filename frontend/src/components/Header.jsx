@@ -7,6 +7,37 @@ import axios from "axios";
 import { API_BASE_URL } from "../config";
 import BellButton from "./BellButton";
 
+function DropdownButton({ label, isOpen, onToggle, children }) {
+  return (
+    <div className="relative">
+      <button onClick={onToggle} className="font-medium hover:underline">
+        {label}
+      </button>
+      {isOpen && (
+        <div className="absolute right-0 top-full mt-2 w-40 bg-white text-black rounded shadow-lg z-10">
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function UserDropdown({ username, onViewOrders, onWishlist, onLogout }) {
+  return (
+    <div className="absolute right-0 top-full mt-2 w-32 bg-white text-black rounded shadow-lg z-10">
+      <button onClick={onViewOrders} className="w-full text-left px-4 py-2 hover:bg-gray-200">
+        View Orders
+      </button>
+      <button onClick={onWishlist} className="w-full text-left px-4 py-2 hover:bg-gray-200">
+        My Wishlist
+      </button>
+      <button onClick={onLogout} className="w-full text-left px-4 py-2 hover:bg-gray-200">
+        Logout
+      </button>
+    </div>
+  );
+}
+
 export default function Header() {
   const { username, logout, role, userId } = useContext(UserContext);
   const [openDropdown, setOpenDropdown] = useState(null);
@@ -15,34 +46,32 @@ export default function Header() {
   const navigate = useNavigate();
   const { clearCart } = useCart();
 
-  // 🧠 Fetch outstanding orders for seller/admin
+  // Fetch outstanding orders for seller/admin
   useEffect(() => {
+    if (!userId || !(role === "SELLER" || role === "ADMIN")) return;
+
     const fetchOutstandingOrders = async () => {
-      if ((role === "SELLER" || role === "ADMIN") && userId) {
-        try {
-          const res = await axios.get(`${API_BASE_URL}/orders/seller`, {
-            params: { sellerId: userId },
-          });
-
-          const orders = res.data || [];
-          const count = orders.reduce((acc, order) => {
-            const pendingItems = order.items?.filter(
-              (item) => item.sellerId === userId && item.status === "PENDING"
-            ).length;
-            return acc + (pendingItems || 0);
-          }, 0);
-
-          setOutstandingOrders(count);
-        } catch (err) {
-          console.error("Failed to fetch outstanding orders:", err);
-        }
+      try {
+        const res = await axios.get(`${API_BASE_URL}/orders/seller`, {
+          params: { sellerId: userId },
+        });
+        const orders = res.data || [];
+        const count = orders.reduce((acc, order) => {
+          const pendingItems = order.items?.filter(
+            (item) => item.sellerId === userId && item.status === "PENDING"
+          ).length;
+          return acc + (pendingItems || 0);
+        }, 0);
+        setOutstandingOrders(count);
+      } catch (err) {
+        console.error("Failed to fetch outstanding orders:", err);
       }
     };
 
     fetchOutstandingOrders();
   }, [role, userId]);
 
-  // 🧱 Close dropdowns when clicking outside
+  // Close dropdowns on outside click
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (wrapperRef.current && !wrapperRef.current.contains(event.target)) {
@@ -59,178 +88,76 @@ export default function Header() {
     setOpenDropdown(null);
   };
 
-  const handleViewOrders = () => {
-    navigate("/myorders");
-    setOpenDropdown(null);
-  };
-
-  const handleManageProducts = () => {
-    navigate("/product-management");
-    setOpenDropdown(null);
-  };
-
-  const handleManageOrders = () => {
-    navigate("/manageorders");
-    setOpenDropdown(null);
-  };
-
-  const handleMyWishlist = () => {
-    navigate("/wishlist");
-    setOpenDropdown(null);
-  };
-
-  const handleManageDisputes = () => {
-    navigate("/disputes");
+  const navigateTo = (path) => {
+    navigate(path);
     setOpenDropdown(null);
   };
 
   return (
     <header className="bg-blue-600 text-white">
       <div className="container mx-auto flex items-center justify-between px-6 py-4">
-        {/* Logo */}
         <h1 className="text-2xl font-bold">
           <Link to="/">sellr</Link>
         </h1>
 
         <div className="flex items-center space-x-4" ref={wrapperRef}>
-          {/* Shop Link */}
           <nav className="space-x-4 font-medium">
             <Link to="/products" className="hover:text-gray-200">
               Shop
             </Link>
           </nav>
 
-          {/* Admin Dropdown */}
+          {/* Admin Console */}
           {role === "ADMIN" && (
-            <div className="relative">
-              <button
-                onClick={() =>
-                  setOpenDropdown(openDropdown === "ADMIN" ? null : "ADMIN")
-                }
-                className="font-medium hover:underline"
-              >
-                Admin Console
-              </button>
-
-              {openDropdown === "ADMIN" && (
-                <div className="absolute right-0 top-full mt-2 w-40 bg-white text-black rounded shadow-lg z-10">
-                  <button
-                    onClick={() => {
-                      navigate("/users");
-                      setOpenDropdown(null);
-                    }}
-                    className="w-full text-left px-4 py-2 hover:bg-gray-200"
-                  >
-                    All Users
-                  </button>
-                  <button
-                    onClick={() => {
-                      navigate("/product-management");
-                      setOpenDropdown(null);
-                    }}
-                    className="w-full text-left px-4 py-2 hover:bg-gray-200"
-                  >
-                    All Products
-                  </button>
-                  <button
-                    onClick={() => {
-                      navigate("/manageorders");
-                      setOpenDropdown(null);
-                    }}
-                    className="w-full text-left px-4 py-2 hover:bg-gray-200"
-                  >
-                    All Orders
-                  </button>
-                </div>
-              )}
-            </div>
+            <DropdownButton
+              label="Admin Console"
+              isOpen={openDropdown === "ADMIN"}
+              onToggle={() =>
+                setOpenDropdown(openDropdown === "ADMIN" ? null : "ADMIN")
+              }
+            >
+              <button onClick={() => navigateTo("/users")} className="w-full text-left px-4 py-2 hover:bg-gray-200">All Users</button>
+              <button onClick={() => navigateTo("/product-management")} className="w-full text-left px-4 py-2 hover:bg-gray-200">All Products</button>
+              <button onClick={() => navigateTo("/manageorders")} className="w-full text-left px-4 py-2 hover:bg-gray-200">All Orders</button>
+            </DropdownButton>
           )}
 
-          {/* Seller Dropdown */}
-          {(role === "SELLER") && (
-            <div className="relative">
-              <button
-                onClick={() =>
-                  setOpenDropdown(openDropdown === "SELLER" ? null : "SELLER")
-                }
-                className="font-medium hover:underline"
-              >
-                Seller Console
-              </button>
-
-              {openDropdown === "SELLER" && (
-                <div className="absolute right-0 top-full mt-2 w-40 bg-white text-black rounded shadow-lg z-10">
-                  <button
-                    onClick={handleManageProducts}
-                    className="w-full text-left px-4 py-2 hover:bg-gray-200"
-                  >
-                    Manage Products
-                  </button>
-                  <button
-                    onClick={handleManageOrders}
-                    className="w-full text-left px-4 py-2 hover:bg-gray-200"
-                  >
-                    Manage Orders
-                  </button>
-                  <button
-                    onClick={handleManageDisputes}
-                    className="w-full text-left px-4 py-2 hover:bg-gray-200"
-                  >
-                    Manage Disputes
-                  </button>
-                </div>
-              )}
-            </div>
+          {/* Seller Console */}
+          {role === "SELLER" && (
+            <DropdownButton
+              label="Seller Console"
+              isOpen={openDropdown === "SELLER"}
+              onToggle={() =>
+                setOpenDropdown(openDropdown === "SELLER" ? null : "SELLER")
+              }
+            >
+              <button onClick={() => navigateTo("/product-management")} className="w-full text-left px-4 py-2 hover:bg-gray-200">Manage Products</button>
+              <button onClick={() => navigateTo("/manageorders")} className="w-full text-left px-4 py-2 hover:bg-gray-200">Manage Orders</button>
+              <button onClick={() => navigateTo("/disputes")} className="w-full text-left px-4 py-2 hover:bg-gray-200">Manage Disputes</button>
+            </DropdownButton>
           )}
 
-          {/* User Dropdown + Notifications/Cart */}
+          {/* User Dropdown + Notifications */}
           {username ? (
             <div className="flex items-center">
-              {/* User dropdown */}
-              <div className="relative">
-                <button
-                  onClick={() =>
-                    setOpenDropdown(openDropdown === "USER" ? null : "USER")
-                  }
-                  className="font-medium hover:underline"
-                >
-                  Hello, {username}
-                </button>
+              <DropdownButton
+                label={`Hello, ${username}`}
+                isOpen={openDropdown === "USER"}
+                onToggle={() =>
+                  setOpenDropdown(openDropdown === "USER" ? null : "USER")
+                }
+              >
+                <UserDropdown
+                  username={username}
+                  onViewOrders={() => navigateTo("/myorders")}
+                  onWishlist={() => navigateTo("/wishlist")}
+                  onLogout={handleLogout}
+                />
+              </DropdownButton>
 
-                {openDropdown === "USER" && (
-                  <div className="absolute right-0 top-full mt-2 w-32 bg-white text-black rounded shadow-lg z-10">
-                    <button
-                      onClick={handleViewOrders}
-                      className="w-full text-left px-4 py-2 hover:bg-gray-200"
-                    >
-                      View Orders
-                    </button>
-                    <button
-                      onClick={handleMyWishlist}
-                      className="w-full text-left px-4 py-2 hover:bg-gray-200"
-                    >
-                      My Wishlist
-                    </button>
-                    <button
-                      onClick={handleLogout}
-                      className="w-full text-left px-4 py-2 hover:bg-gray-200"
-                    >
-                      Logout
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              {/* 🔔 Bell for Seller/Admin */}
               {(role === "SELLER" || role === "ADMIN") ? (
-                <div className="ml-4 relative">
-                  <button
-                    onClick={() => navigate("/manageorders")}
-                    className="relative p-2 hover:bg-blue-700 rounded-full transition"
-                    title="View Orders"
-                  >
-                    <BellButton count={outstandingOrders} to="/manageorders" />
-                  </button>
+                <div className="ml-4">
+                  <BellButton count={outstandingOrders} to="/manageorders" />
                 </div>
               ) : (
                 <div className="ml-4">
@@ -240,15 +167,9 @@ export default function Header() {
             </div>
           ) : (
             <div className="flex space-x-4">
-              <Link to="/login" className="font-medium hover:underline">
-                Login
-              </Link>
-              <Link to="/register" className="font-medium hover:underline">
-                Register
-              </Link>
-              <Link to="/contact" className="hover:text-gray-200">
-                Help
-              </Link>
+              <Link to="/login" className="font-medium hover:underline">Login</Link>
+              <Link to="/register" className="font-medium hover:underline">Register</Link>
+              <Link to="/contact" className="hover:text-gray-200">Help</Link>
             </div>
           )}
         </div>

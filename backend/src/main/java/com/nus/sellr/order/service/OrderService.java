@@ -118,10 +118,7 @@ public class OrderService {
                         order.setOverallStatus(OrderStatus.INCOMPLETE);
                     }
 
-                    // You can also store counts in the DTO if needed
-                    OrderResponseDTO dto = toResponseDTO(order);
-
-                    return dto;
+                    return toResponseDTO(order);
                 })
                 .collect(Collectors.toList());
     }
@@ -316,8 +313,6 @@ public class OrderService {
                     }
                     item.setStatus(OrderStatus.RESOLVED); // or COMPLETED
                     item.setDisputeRaised(false);
-                    //item.setDisputeReason(null);
-                    //item.setDisputeDescription(null);
                     item.setDisputeRaisedAt(LocalDateTime.now());
                 });
 

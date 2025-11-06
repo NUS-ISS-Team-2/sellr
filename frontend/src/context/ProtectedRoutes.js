@@ -1,5 +1,6 @@
 import React, { useContext } from "react";
 import { Navigate } from "react-router-dom";
+import PropTypes from "prop-types";
 import { UserContext } from "./UserContext";
 
 export default function ProtectedRoute({ children, allowedRoles }) {
@@ -18,3 +19,9 @@ export default function ProtectedRoute({ children, allowedRoles }) {
   // Otherwise, render the protected component
   return children;
 }
+
+// Prop validation
+ProtectedRoute.propTypes = {
+  children: PropTypes.node.isRequired,
+  allowedRoles: PropTypes.arrayOf(PropTypes.string),
+};

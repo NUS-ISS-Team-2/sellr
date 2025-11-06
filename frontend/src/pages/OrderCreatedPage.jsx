@@ -45,6 +45,21 @@ export default function OrderCreatedPage() {
     setModalOpen(true);
   };
 
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "PENDING":
+        return "text-red-600";
+      case "SHIPPED":
+        return "text-yellow-600";
+      case "DELIVERED":
+        return "text-green-600";
+      case "DISPUTING":
+        return "text-purple-600";
+      default:
+        return "text-gray-600";
+    }
+  };
+
   // Mark item as delivered
   const handleMarkAsDelivered = async (productId) => {
     try {
@@ -104,18 +119,7 @@ export default function OrderCreatedPage() {
                 {/* Status with color */}
                 <p>
                   Status:{" "}
-                  <span
-                    className={`ml-2 font-medium ${item.status === "PENDING"
-                        ? "text-red-600"
-                        : item.status === "SHIPPED"
-                          ? "text-yellow-600"
-                          : item.status === "DELIVERED"
-                            ? "text-green-600"
-                            : item.status === "DISPUTING"
-                              ? "text-purple-600"
-                              : "text-gray-600"
-                      }`}
-                  >
+                  <span className={`ml-2 font-medium ${getStatusColor(item.status)}`}>
                     {item.status}
                   </span>
                 </p>

@@ -1,7 +1,7 @@
 // src/components/Toast.jsx
 import { useEffect } from "react";
+import PropTypes from "prop-types";
 
-// src/components/Toast.jsx
 export default function Toast({ type = "success", message, duration = 5000, onClose }) {
   // Auto-dismiss after duration
   useEffect(() => {
@@ -19,9 +19,19 @@ export default function Toast({ type = "success", message, duration = 5000, onCl
 
   return (
     <div
-      className={`text-center py-2 px-3 rounded-md mx-3 mb-4 ${typeStyles[type] || typeStyles.success}`}
+      className={`text-center py-2 px-3 rounded-md mx-3 mb-4 ${
+        typeStyles[type] || typeStyles.success
+      }`}
     >
       {message}
     </div>
   );
 }
+
+// Prop validation
+Toast.propTypes = {
+  type: PropTypes.oneOf(["success", "error", "warning"]),
+  message: PropTypes.string.isRequired,
+  duration: PropTypes.number,
+  onClose: PropTypes.func,
+};

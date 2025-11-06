@@ -118,7 +118,7 @@ export default function OrderManagementPage() {
                   <th className="px-4 py-3">Date</th>
                   <th className="px-4 py-3">Total</th>
                   <th className="px-4 py-3 relative text-left text-sm font-semibold text-gray-700">
-                    Status
+                    Status{""}
                     <span className="ml-1 relative group cursor-pointer">
                       ℹ️
                       <span className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-48 bg-gray-800 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity z-50">

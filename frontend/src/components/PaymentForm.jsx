@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import PropTypes from "prop-types";
 
 export default function PaymentForm({
   paymentMethod,
@@ -146,3 +147,17 @@ export default function PaymentForm({
     </div>
   );
 }
+
+PaymentForm.propTypes = {
+  paymentMethod: PropTypes.string.isRequired,
+  setPaymentMethod: PropTypes.func.isRequired,
+  paymentDetails: PropTypes.shape({
+    cardNumber: PropTypes.string,
+    cardName: PropTypes.string,
+    expiry: PropTypes.string,
+    cvv: PropTypes.string,
+    paypalEmail: PropTypes.string,
+    referenceNumber: PropTypes.string,
+  }).isRequired,
+  setPaymentDetails: PropTypes.func.isRequired,
+};

@@ -109,44 +109,53 @@ export default function UsersPage() {
                                         </td>
                                     </tr>
                                 ) : (
-                                    users.map((user) => (
-                                        <tr key={user.id} className="text-sm">
-                                            <td className="px-4 py-4">{user.id}</td>
-                                            <td className="px-4 py-4">{user.username}</td>
-                                            <td className="px-4 py-4">{user.email}</td>
-                                            <td className="px-4 py-4">{user.role}</td>
-                                            <td className="px-4 py-4">
-                                                {user.disabled ? (
-                                                    <span className="text-red-600 font-semibold">Disabled</span>
-                                                ) : (
-                                                    <span className="text-green-600 font-semibold">Active</span>
-                                                )}
-                                            </td>
-                                            <td className="px-4 py-4 text-right space-x-2">
-                                                <button
-                                                    className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
-                                                    onClick={() => setEditingUser(user)}
-                                                >
-                                                    Edit
-                                                </button>
-                                                <button
-                                                    className="px-2 py-1 bg-purple-500 text-white rounded hover:bg-purple-600"
-                                                    onClick={() => setPasswordUser(user)}
-                                                >
-                                                    Change Password
-                                                </button>
-                                                <button
-                                                    className={`px-2 py-1 rounded text-white ${user.disabled ? "bg-green-500 hover:bg-green-600" : "bg-red-500 hover:bg-red-600"
-                                                        }`}
-                                                    onClick={() => handleToggleDisable(user)}
-                                                >
-                                                    {user.disabled ? "Enable" : "Disable"}
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))
+                                    users.map((user) => {
+                                        // Extracted ternaries
+                                        const statusText = user.disabled ? "Disabled" : "Active";
+                                        const statusClass = user.disabled
+                                            ? "text-red-600 font-semibold"
+                                            : "text-green-600 font-semibold";
+
+                                        const toggleButtonLabel = user.disabled ? "Enable" : "Disable";
+                                        const toggleButtonClass = user.disabled
+                                            ? "px-2 py-1 rounded text-white bg-green-500 hover:bg-green-600"
+                                            : "px-2 py-1 rounded text-white bg-red-500 hover:bg-red-600";
+
+                                        return (
+                                            <tr key={user.id} className="text-sm">
+                                                <td className="px-4 py-4">{user.id}</td>
+                                                <td className="px-4 py-4">{user.username}</td>
+                                                <td className="px-4 py-4">{user.email}</td>
+                                                <td className="px-4 py-4">{user.role}</td>
+                                                <td className="px-4 py-4">
+                                                    <span className={statusClass}>{statusText}</span>
+                                                </td>
+                                                <td className="px-4 py-4 text-right space-x-2">
+                                                    <button
+                                                        className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+                                                        onClick={() => setEditingUser(user)}
+                                                    >
+                                                        Edit
+                                                    </button>
+                                                    <button
+                                                        className="px-2 py-1 bg-purple-500 text-white rounded hover:bg-purple-600"
+                                                        onClick={() => setPasswordUser(user)}
+                                                    >
+                                                        Change Password
+                                                    </button>
+                                                    <button
+                                                        className={toggleButtonClass}
+                                                        onClick={() => handleToggleDisable(user)}
+                                                    >
+                                                        {toggleButtonLabel}
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })
                                 )}
                             </tbody>
+
                         </table>
                     </div>
                 </div>

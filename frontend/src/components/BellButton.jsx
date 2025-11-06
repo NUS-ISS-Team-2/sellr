@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import PropTypes from "prop-types";
 
 export default function BellButton({ count = 0, to = "/manageorders" }) {
   return (
@@ -37,3 +38,8 @@ export default function BellButton({ count = 0, to = "/manageorders" }) {
     </Link>
   );
 }
+
+BellButton.propTypes = {
+  count: PropTypes.number,
+  to: PropTypes.string,
+};
