@@ -13,6 +13,6 @@ public class PaypalPaymentStrategy implements PaymentStrategy {
 
     @Override
     public void processPayment(PaymentDetails paymentDetails) {
-        System.out.println("Processing PayPal payment for email: " + paymentDetails.getPaypalEmail());
+
     }
 }

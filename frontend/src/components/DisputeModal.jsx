@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import PropTypes from "prop-types";
 import axios from "axios";
 import { API_BASE_URL } from "../config";
 import StatusModal from "./StatusModal";
@@ -14,8 +15,7 @@ export default function DisputeModal({
 }) {
   const [reason, setReason] = useState("");
   const [description, setDescription] = useState("");
-  
-  // ✅ modal state
+
   const [modalOpen, setModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
   const [modalMessage, setModalMessage] = useState("");
@@ -68,8 +68,12 @@ export default function DisputeModal({
             Raise Dispute for {product.productName}
           </h3>
 
-          <label className="block mb-2 font-medium">Reason*</label>
+          {/* ✅ Associate labels using htmlFor and id */}
+          <label htmlFor="reason" className="block mb-2 font-medium">
+            Reason*
+          </label>
           <input
+            id="reason"
             type="text"
             value={reason}
             onChange={(e) => setReason(e.target.value)}
@@ -77,8 +81,11 @@ export default function DisputeModal({
             placeholder="e.g., Item damaged"
           />
 
-          <label className="block mb-2 font-medium">Description</label>
+          <label htmlFor="description" className="block mb-2 font-medium">
+            Description
+          </label>
           <textarea
+            id="description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             className="w-full border px-2 py-1 mb-4 rounded"
@@ -104,3 +111,17 @@ export default function DisputeModal({
     </>
   );
 }
+
+/* ✅ Add PropTypes validation */
+DisputeModal.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  orderId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  product: PropTypes.shape({
+    productId: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
+      .isRequired,
+    productName: PropTypes.string,
+    name: PropTypes.string,
+  }).isRequired,
+  onDisputeRaised: PropTypes.func.isRequired,
+};

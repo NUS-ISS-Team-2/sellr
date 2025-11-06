@@ -43,10 +43,11 @@ export default function ContactUsPage() {
             className="bg-white rounded-lg shadow-md p-6 w-full max-w-md"
           >
             <div className="mb-4 text-left">
-              <label className="block text-gray-700 font-semibold mb-1">
+              <label htmlFor="contact-name" className="block text-gray-700 font-semibold mb-1">
                 Name
               </label>
               <input
+                id="contact-name"
                 type="text"
                 name="name"
                 value={formData.name}
@@ -57,10 +58,11 @@ export default function ContactUsPage() {
             </div>
 
             <div className="mb-4 text-left">
-              <label className="block text-gray-700 font-semibold mb-1">
+              <label htmlFor="contact-email" className="block text-gray-700 font-semibold mb-1">
                 Email
               </label>
               <input
+                id="contact-email"
                 type="email"
                 name="email"
                 value={formData.email}
@@ -71,10 +73,11 @@ export default function ContactUsPage() {
             </div>
 
             <div className="mb-4 text-left">
-              <label className="block text-gray-700 font-semibold mb-1">
+              <label htmlFor="contact-message" className="block text-gray-700 font-semibold mb-1">
                 Message
               </label>
               <textarea
+                id="contact-message"
                 name="message"
                 value={formData.message}
                 onChange={handleChange}
@@ -91,6 +94,7 @@ export default function ContactUsPage() {
               Send Message
             </button>
           </form>
+
         )}
       </main>
 

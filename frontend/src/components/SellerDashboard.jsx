@@ -1,6 +1,7 @@
-import { useEffect, useState, useContext } from "react";
+import { useEffect, useState, useContext, useCallback } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import PropTypes from "prop-types";
 import { UserContext } from "../context/UserContext";
 import { API_BASE_URL } from "../config";
 
@@ -8,54 +9,52 @@ export default function SellerDashboard({ products }) {
   const { userId, role } = useContext(UserContext);
   const [loading, setLoading] = useState(true);
   const [outstandingOrders, setOutstandingOrders] = useState(0);
-  const [isTableOpen, setIsTableOpen] = useState(false);
   const [disputedOrders, setDisputedOrders] = useState(0);
-  useEffect(() => {
+  const [isTableOpen, setIsTableOpen] = useState(false);
+
+  // --- Helper Functions ---
+  const countItemsByStatus = useCallback((orders, status) => {
+    return orders.reduce((count, order) => {
+      const items = order.items?.filter(
+        (item) => item.sellerId === userId && item.status === status
+      );
+      return count + (items?.length || 0);
+    }, 0);
+  }, [userId]);
+
+  const fetchOutstandingOrders = useCallback(async () => {
     if (role !== "SELLER" || !userId) return;
+    setLoading(true);
 
-    const fetchOutstandingOrders = async () => {
-      setLoading(true);
-      try {
-        const ordersRes = await axios.get(`${API_BASE_URL}/orders/seller`, {
-          params: { sellerId: userId },
-        });
+    try {
+      const { data } = await axios.get(`${API_BASE_URL}/orders/seller`, {
+        params: { sellerId: userId },
+      });
+      const orders = data || [];
 
-        const orders = ordersRes.data || [];
+      const outstandingCount = countItemsByStatus(orders, "PENDING");
+      const disputedCount = countItemsByStatus(orders, "DISPUTING");
 
-        // Count pending shipments
-        const outstandingCount = orders.reduce((count, order) => {
-          const pendingItems = order.items?.filter(
-            (item) => item.sellerId === userId && item.status === "PENDING"
-          ).length;
-          return count + (pendingItems || 0);
-        }, 0);
+      setOutstandingOrders(outstandingCount);
+      setDisputedOrders(disputedCount);
+    } catch (err) {
+      console.error("Failed to load outstanding orders:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [role, userId, countItemsByStatus]);
 
-        // Count disputed items
-        const disputedCount = orders.reduce((count, order) => {
-          const disputedItems = order.items?.filter(
-            (item) => item.sellerId === userId && item.status === "DISPUTING"
-          ).length;
-          return count + (disputedItems || 0);
-        }, 0);
-
-        setOutstandingOrders(outstandingCount);
-        setDisputedOrders(disputedCount); // new state
-      } catch (err) {
-        console.error("Failed to load outstanding orders:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
+  // --- Lifecycle ---
+  useEffect(() => {
     fetchOutstandingOrders();
-  }, [role, userId]);
+  }, [fetchOutstandingOrders]);
 
-
+  // --- Derived Values ---
   if (role !== "SELLER") return null;
-
   const lowStockProducts = products?.filter((p) => p.stock < 10) || [];
   const lowStockCount = lowStockProducts.length;
 
+  // --- Render ---
   return (
     <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-6">
       <h2 className="text-2xl font-bold mb-6 text-gray-800">Your Summary</h2>
@@ -66,99 +65,130 @@ export default function SellerDashboard({ products }) {
         </div>
       ) : (
         <div className="grid sm:grid-cols-3 gap-6">
-          {/* Outstanding Orders */}
-          <Link
+          <DashboardCard
+            title="Outstanding Orders"
+            count={outstandingOrders}
             to="/manageorders"
-            className="block p-4 border rounded-lg text-center hover:bg-blue-50 transition"
-          >
-            <h3 className="text-lg font-semibold text-gray-700">
-              Outstanding Orders
-            </h3>
-            <p
-              className={`text-3xl font-bold mt-2 ${outstandingOrders > 0 ? "text-red-600" : "text-green-600"
-                }`}
-            >
-              {outstandingOrders}
-            </p>
-            <p className="text-sm text-gray-500 mt-1">Pending shipments</p>
-          </Link>
-
-          {/* Low Stock Products */}
-          <Link
+            colorClass={
+              outstandingOrders > 0 ? "text-red-600" : "text-green-600"
+            }
+            description="Pending shipments"
+          />
+          <DashboardCard
+            title="Low Stock Products"
+            count={lowStockCount}
             to="/product-management"
-            className="block p-4 border rounded-lg text-center hover:bg-yellow-50 transition"
-          >
-            <h3 className="text-lg font-semibold text-gray-700">
-              Low Stock Products
-            </h3>
-            <p
-              className={`text-3xl font-bold mt-2 ${lowStockCount > 0 ? "text-yellow-500" : "text-green-600"
-                }`}
-            >
-              {lowStockCount}
-            </p>
-            <p className="text-sm text-gray-500 mt-1">Stock below 10 units</p>
-          </Link>
-          <Link
+            colorClass={
+              lowStockCount > 0 ? "text-yellow-500" : "text-green-600"
+            }
+            description="Stock below 10 units"
+          />
+          <DashboardCard
+            title="Disputed Orders"
+            count={disputedOrders}
             to="/disputes"
-            className="block p-4 border rounded-lg text-center hover:bg-red-50 transition"
-          >
-            <h3 className="text-lg font-semibold text-gray-700">
-              Disputed Orders
-            </h3>
-            <p
-              className={`text-3xl font-bold mt-2 ${disputedOrders > 0 ? "text-red-600" : "text-green-600"
-                }`}
-            >
-              {disputedOrders}
-            </p>
-            <p className="text-sm text-gray-500 mt-1">Orders currently in dispute</p>
-          </Link>
+            colorClass={
+              disputedOrders > 0 ? "text-red-600" : "text-green-600"
+            }
+            description="Orders currently in dispute"
+          />
         </div>
       )}
 
-      {/* Low Stock Details (Collapsible) */}
       {lowStockProducts.length > 0 && (
-        <div className="mt-8">
-          <button
-            onClick={() => setIsTableOpen(!isTableOpen)}
-            className="flex items-center justify-between w-full text-left"
-          >
-            <h3 className="text-lg font-semibold text-gray-800">
-              Products Low in Stock
-            </h3>
-            <span className="text-gray-600 text-lg">
-              {isTableOpen ? "▲" : "▼"}
-            </span>
-          </button>
+        <LowStockTable
+          isTableOpen={isTableOpen}
+          setIsTableOpen={setIsTableOpen}
+          products={lowStockProducts}
+        />
+      )}
+    </div>
+  );
+}
 
-          {isTableOpen && (
-            <div className="overflow-x-auto border rounded-lg mt-3 transition-all duration-300">
-              <table className="min-w-full text-left text-sm">
-                <thead className="bg-gray-100 text-gray-600 uppercase">
-                  <tr>
-                    <th className="px-4 py-2 font-medium">Name</th>
-                    <th className="px-4 py-2 font-medium text-right">Stock</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {lowStockProducts.map((p) => (
-                    <tr
-                      key={p.id}
-                      className="border-t hover:bg-gray-50 transition-colors"
-                    >
-                      <td className="px-4 py-2">{p.name}</td>
-                      <td className="px-4 py-2 text-right font-semibold text-yellow-600">
-                        {p.stock}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+function DashboardCard({ title, count, to, colorClass, description }) {
+  return (
+    <Link
+      to={to}
+      className="block p-4 border rounded-lg text-center hover:bg-blue-50 transition"
+    >
+      <h3 className="text-lg font-semibold text-gray-700">{title}</h3>
+      <p className={`text-3xl font-bold mt-2 ${colorClass}`}>{count}</p>
+      <p className="text-sm text-gray-500 mt-1">{description}</p>
+    </Link>
+  );
+}
+
+DashboardCard.propTypes = {
+  title: PropTypes.string.isRequired,
+  count: PropTypes.number.isRequired,
+  to: PropTypes.string.isRequired,
+  colorClass: PropTypes.string.isRequired,
+  description: PropTypes.string.isRequired,
+};
+
+function LowStockTable({ isTableOpen, setIsTableOpen, products }) {
+  return (
+    <div className="mt-8">
+      <button
+        onClick={() => setIsTableOpen(!isTableOpen)}
+        className="flex items-center justify-between w-full text-left"
+      >
+        <h3 className="text-lg font-semibold text-gray-800">
+          Products Low in Stock
+        </h3>
+        <span className="text-gray-600 text-lg">
+          {isTableOpen ? "▲" : "▼"}
+        </span>
+      </button>
+
+      {isTableOpen && (
+        <div className="overflow-x-auto border rounded-lg mt-3 transition-all duration-300">
+          <table className="min-w-full text-left text-sm">
+            <thead className="bg-gray-100 text-gray-600 uppercase">
+              <tr>
+                <th className="px-4 py-2 font-medium">Name</th>
+                <th className="px-4 py-2 font-medium text-right">Stock</th>
+              </tr>
+            </thead>
+            <tbody>
+              {products.map((p) => (
+                <tr
+                  key={p.id}
+                  className="border-t hover:bg-gray-50 transition-colors"
+                >
+                  <td className="px-4 py-2">{p.name}</td>
+                  <td className="px-4 py-2 text-right font-semibold text-yellow-600">
+                    {p.stock}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
     </div>
   );
 }
+
+LowStockTable.propTypes = {
+  isTableOpen: PropTypes.bool.isRequired,
+  setIsTableOpen: PropTypes.func.isRequired,
+  products: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.any.isRequired,
+      name: PropTypes.string.isRequired,
+      stock: PropTypes.number.isRequired,
+    })
+  ).isRequired,
+};
+
+SellerDashboard.propTypes = {
+  products: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.any.isRequired,
+      name: PropTypes.string,
+      stock: PropTypes.number,
+    })
+  ),
+};

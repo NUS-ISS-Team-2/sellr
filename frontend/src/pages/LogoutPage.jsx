@@ -14,7 +14,7 @@ export default function LogoutPage() {
     }, 1000);
 
     // Redirect when countdown reaches 0
-    if (countdown <= 0) {
+    if (countdown === 0) {
       navigate("/");
     }
 
